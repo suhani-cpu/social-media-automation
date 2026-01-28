@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Running pre-push hooks..."
+
+# Type check backend if backend files changed
+if git diff --name-only origin/main...HEAD | grep -q "^backend/"; then
+  echo "Type checking backend..."
+  cd backend && npm run type-check
+fi
+
+# Type check frontend if frontend files changed
+if git diff --name-only origin/main...HEAD | grep -q "^frontend/"; then
+  echo "Type checking frontend..."
+  cd frontend && npm run type-check
+fi
+
+echo "Pre-push checks passed!"

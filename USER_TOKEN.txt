@@ -1,0 +1,8 @@
+Access Token for suhani@stageott.com:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3NzMxM2U3Yi02YTdmLTRjZTQtOGQ4Zi0zNTM4MzczYTM3YzkiLCJpYXQiOjE3Njk1ODk5MDQsImV4cCI6MTc3MDE5NDcwNH0.GHBvctMsJLXiGpkIA28YyPVmEGi2uVsbrUv9627zdd8
+
+Login Credentials:
+Email: suhani@stageott.com
+Password: Stage@123
+
+User ID: 77313e7b-6a7f-4ce4-8d8f-3538373a37c9

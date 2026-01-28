@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Running pre-commit hooks..."
+
+# Run lint-staged on backend if backend files changed
+if git diff --cached --name-only | grep -q "^backend/"; then
+  echo "Linting backend files..."
+  cd backend && npx lint-staged
+fi
+
+# Run lint-staged on frontend if frontend files changed
+if git diff --cached --name-only | grep -q "^frontend/"; then
+  echo "Linting frontend files..."
+  cd frontend && npx lint-staged
+fi
+
+echo "Pre-commit checks passed!"
