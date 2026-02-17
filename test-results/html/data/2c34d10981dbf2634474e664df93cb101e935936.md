@@ -1,0 +1,50 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - button "Toggle theme" [ref=e4] [cursor=pointer]:
+      - img [ref=e5]
+      - generic [ref=e11]: Toggle theme
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - img [ref=e15]
+        - heading "Join Stage OTT" [level=1] [ref=e17]
+        - paragraph [ref=e18]: Start automating your social media 🚀
+      - generic [ref=e19]:
+        - heading "Create an account" [level=3] [ref=e20]
+        - paragraph [ref=e21]: Enter your information to get started
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - text: First Name
+            - textbox "First Name" [ref=e26]:
+              - /placeholder: John
+              - text: New User 1770100284030
+          - generic [ref=e27]:
+            - text: Last Name
+            - textbox "Last Name" [active] [ref=e28]:
+              - /placeholder: Doe
+            - paragraph [ref=e29]: Last name must be at least 2 characters
+        - generic [ref=e30]:
+          - text: Email
+          - textbox "Email" [ref=e31]:
+            - /placeholder: you@example.com
+            - text: newuser-1770100284030@example.com
+        - generic [ref=e32]:
+          - text: Password
+          - textbox "Password" [ref=e33]:
+            - /placeholder: ••••••••
+            - text: SecurePassword123!
+        - generic [ref=e34]:
+          - text: Confirm Password
+          - textbox "Confirm Password" [ref=e35]:
+            - /placeholder: ••••••••
+            - text: SecurePassword123!
+        - button "Create account" [ref=e36] [cursor=pointer]
+        - paragraph [ref=e37]:
+          - text: Already have an account?
+          - link "Login" [ref=e38] [cursor=pointer]:
+            - /url: /login
+  - alert [ref=e39]
+```

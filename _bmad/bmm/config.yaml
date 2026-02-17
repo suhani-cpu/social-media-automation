@@ -1,0 +1,11 @@
+project_name: Social Media Automation Tool
+output_folder: _bmad/bmm/artifacts
+planning_artifacts:
+  product_brief: product-brief.md
+  architecture: architecture.md
+  prd: prd.md
+  epics_and_stories: epics-and-stories.md
+user_name: Suhani
+communication_language: Hinglish
+document_output_language: English
+user_skill_level: non-technical

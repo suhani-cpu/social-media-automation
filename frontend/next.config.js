@@ -36,6 +36,10 @@ const nextConfig = {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'self'; connect-src 'self' http://localhost:3000 http://localhost:3001; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;",
+          },
         ],
       },
     ];

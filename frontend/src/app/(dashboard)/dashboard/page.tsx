@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Video, FileText, Calendar, TrendingUp, Upload, Plus } from 'lucide-react';
+import { Video, FileText, Calendar, TrendingUp, Upload, Plus, Instagram, Youtube, Facebook } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import apiClient from '@/lib/api/client';
@@ -35,69 +35,102 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Overview of your social media automation</p>
+      {/* Header with Gradient Background */}
+      <div className="multi-social-gradient rounded-xl p-6 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="flex gap-4 justify-end items-start p-4">
+            <Instagram className="w-8 h-8 text-white" />
+            <Youtube className="w-8 h-8 text-white" />
+            <Facebook className="w-8 h-8 text-white" />
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Link href="/dashboard/videos/upload">
-            <Button>
-              <Upload className="mr-2 h-4 w-4" />
-              Upload Video
-            </Button>
-          </Link>
-          <Link href="/dashboard/posts/create">
-            <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Post
-            </Button>
-          </Link>
+        <div className="relative">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Welcome to Stage OTT 👋</h1>
+              <p className="text-white/90">Automate your social media content across Instagram, YouTube & Facebook</p>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/dashboard/videos/upload">
+                <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border-white/30 hover-scale">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Video
+                </Button>
+              </Link>
+              <Link href="/dashboard/posts/create">
+                <Button className="bg-white text-primary hover:bg-white/90 hover-scale vibrant-glow">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Post
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
+      {/* Vibrant Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="overflow-hidden hover-scale border-primary/30 hover:shadow-xl hover:shadow-primary/20 transition-all">
+          <div className="stage-gradient h-1"></div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Videos</CardTitle>
-            <Video className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Videos 🎬</CardTitle>
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Video className="h-5 w-5 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalVideos}</div>
-            <p className="text-xs text-muted-foreground">{stats.readyVideos} ready to post</p>
+            <div className="text-3xl font-bold">{stats.totalVideos}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              ✅ {stats.readyVideos} ready to post
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden hover-scale border-[hsl(var(--instagram-pink))]/30 hover:shadow-xl hover:shadow-[hsl(var(--instagram-pink))]/20 transition-all">
+          <div className="instagram-gradient h-1"></div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Posts 📱</CardTitle>
+            <div className="w-10 h-10 rounded-full bg-[hsl(var(--instagram-pink))]/10 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-[hsl(var(--instagram-pink))]" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPosts}</div>
-            <p className="text-xs text-muted-foreground">{stats.publishedPosts} published</p>
+            <div className="text-3xl font-bold">{stats.totalPosts}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              ✨ {stats.publishedPosts} published
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden hover-scale border-[hsl(var(--facebook-blue))]/30 hover:shadow-xl hover:shadow-[hsl(var(--facebook-blue))]/20 transition-all">
+          <div className="facebook-gradient h-1"></div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled Posts</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Scheduled 📅</CardTitle>
+            <div className="w-10 h-10 rounded-full bg-[hsl(var(--facebook-blue))]/10 flex items-center justify-center">
+              <Calendar className="h-5 w-5 text-[hsl(var(--facebook-blue))]" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.scheduledPosts}</div>
-            <p className="text-xs text-muted-foreground">Upcoming posts</p>
+            <div className="text-3xl font-bold">{stats.scheduledPosts}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              ⏰ Upcoming posts
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden hover-scale border-[hsl(var(--youtube-red))]/30 hover:shadow-xl hover:shadow-[hsl(var(--youtube-red))]/20 transition-all">
+          <div className="youtube-gradient h-1"></div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Engagement 📈</CardTitle>
+            <div className="w-10 h-10 rounded-full bg-[hsl(var(--youtube-red))]/10 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-[hsl(var(--youtube-red))]" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground">Coming soon</p>
+            <div className="text-3xl font-bold">-</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              🚀 Coming soon
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -126,14 +159,15 @@ export default function DashboardPage() {
                         <span
                           className={
                             video.status === 'READY'
-                              ? 'text-green-600'
+                              ? 'text-[hsl(var(--status-success))] font-semibold'
                               : video.status === 'PROCESSING'
-                              ? 'text-yellow-600'
+                              ? 'text-[hsl(var(--status-processing))] font-semibold'
                               : video.status === 'FAILED'
-                              ? 'text-red-600'
-                              : 'text-gray-600'
+                              ? 'text-[hsl(var(--status-error))] font-semibold'
+                              : 'text-[hsl(var(--status-pending))] font-semibold'
                           }
                         >
+                          {video.status === 'READY' ? '✅ ' : video.status === 'PROCESSING' ? '⏳ ' : video.status === 'FAILED' ? '❌ ' : '⏸️ '}
                           {video.status}
                         </span>
                       </p>
@@ -157,18 +191,24 @@ export default function DashboardPage() {
                 {posts.slice(0, 5).map((post) => (
                   <div key={post.id} className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium">{post.platform}</p>
+                      <div className="flex items-center gap-2">
+                        {post.platform === 'INSTAGRAM' && <Instagram className="w-4 h-4 text-[hsl(var(--instagram-pink))]" />}
+                        {post.platform === 'YOUTUBE' && <Youtube className="w-4 h-4 text-[hsl(var(--youtube-red))]" />}
+                        {post.platform === 'FACEBOOK' && <Facebook className="w-4 h-4 text-[hsl(var(--facebook-blue))]" />}
+                        <p className="text-sm font-medium">{post.platform}</p>
+                      </div>
                       <span
-                        className={`text-xs ${
+                        className={`text-xs font-semibold ${
                           post.status === 'PUBLISHED'
-                            ? 'text-green-600'
+                            ? 'text-[hsl(var(--status-success))]'
                             : post.status === 'SCHEDULED'
-                            ? 'text-blue-600'
+                            ? 'text-[hsl(var(--facebook-blue))]'
                             : post.status === 'FAILED'
-                            ? 'text-red-600'
-                            : 'text-gray-600'
+                            ? 'text-[hsl(var(--status-error))]'
+                            : 'text-[hsl(var(--status-pending))]'
                         }`}
                       >
+                        {post.status === 'PUBLISHED' ? '✅ ' : post.status === 'SCHEDULED' ? '📅 ' : post.status === 'FAILED' ? '❌ ' : '📝 '}
                         {post.status}
                       </span>
                     </div>

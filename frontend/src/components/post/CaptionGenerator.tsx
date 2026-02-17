@@ -4,10 +4,17 @@ import { useState } from 'react';
 import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
-import { Card } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { postsApi, CaptionVariation } from '@/lib/api/posts';
 import { Language, Platform } from '@/lib/types/api';
+import { cn } from '@/lib/utils';
 
 interface CaptionGeneratorProps {
   videoTitle: string;
@@ -17,6 +24,13 @@ interface CaptionGeneratorProps {
   onLanguageChange: (language: Language) => void;
   language: Language;
 }
+
+const languageOptions = [
+  { value: 'ENGLISH' as Language, label: 'English' },
+  { value: 'HINGLISH' as Language, label: 'Hinglish' },
+  { value: 'HARYANVI' as Language, label: 'Haryanvi' },
+  { value: 'HINDI' as Language, label: 'Hindi' },
+];
 
 export function CaptionGenerator({
   videoTitle,
@@ -56,32 +70,29 @@ export function CaptionGenerator({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold">Generate Caption</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="text-lg font-semibold mb-2">Generate Caption</h3>
+        <p className="text-sm text-muted-foreground mb-4">
           AI-powered captions in multiple languages
         </p>
       </div>
 
       {/* Language Selector */}
-      <div>
+      <div className="space-y-2">
         <Label htmlFor="language">Language</Label>
-        <div className="mt-2 flex gap-2">
-          <Select
-            id="language"
-            value={language}
-            onChange={(e) => onLanguageChange(e.target.value as Language)}
-            className="flex-1"
-          >
-            <option value="ENGLISH">English</option>
-            <option value="HINGLISH">Hinglish</option>
-            <option value="HARYANVI">Haryanvi</option>
-            <option value="HINDI">Hindi</option>
+        <div className="flex gap-2">
+          <Select value={language} onValueChange={(value) => onLanguageChange(value as Language)}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Select language" />
+            </SelectTrigger>
+            <SelectContent>
+              {languageOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-          <Button
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className="flex-shrink-0"
-          >
+          <Button onClick={handleGenerate} disabled={isGenerating} className="flex-shrink-0">
             {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -104,64 +115,63 @@ export function CaptionGenerator({
 
       {/* Error Message */}
       {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
-        </div>
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
       )}
 
       {/* Caption Variations */}
       {variations.length > 0 && (
         <div className="space-y-3">
           <Label>Select a caption variation</Label>
-          {variations.map((variation, index) => (
-            <Card
-              key={index}
-              className={`cursor-pointer p-4 transition-all hover:shadow-md ${
-                selectedCaption?.caption === variation.caption
-                  ? 'border-primary bg-primary/5'
-                  : ''
-              }`}
-              onClick={() => onSelect(variation)}
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className={`mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
-                    selectedCaption?.caption === variation.caption
-                      ? 'border-primary bg-primary'
-                      : 'border-gray-300'
-                  }`}
-                >
-                  {selectedCaption?.caption === variation.caption && (
-                    <div className="h-2 w-2 rounded-full bg-white"></div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm">{variation.caption}</p>
-                  {variation.hashtags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {variation.hashtags.map((tag, tagIndex) => (
-                        <span
-                          key={tagIndex}
-                          className="text-xs text-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {variations.map((variation, index) => (
+              <Card
+                key={index}
+                className={cn(
+                  'cursor-pointer transition-all hover:border-primary',
+                  selectedCaption?.caption === variation.caption && 'border-primary bg-primary/5'
+                )}
+                onClick={() => onSelect(variation)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={cn(
+                        'mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
+                        selectedCaption?.caption === variation.caption
+                          ? 'border-primary bg-primary'
+                          : 'border-gray-300'
+                      )}
+                    >
+                      {selectedCaption?.caption === variation.caption && (
+                        <div className="h-2 w-2 rounded-full bg-white"></div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm whitespace-pre-wrap">{variation.caption}</p>
+                      {variation.hashtags.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {variation.hashtags.map((tag, tagIndex) => (
+                            <span key={tagIndex} className="text-xs text-primary font-medium">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
 
       {/* Empty State */}
       {variations.length === 0 && !isGenerating && !error && (
         <div className="rounded-lg border border-dashed bg-card p-8 text-center">
-          <Sparkles className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h4 className="mt-4 font-semibold">No captions generated yet</h4>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <Sparkles className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h4 className="font-semibold mb-2">No captions generated yet</h4>
+          <p className="text-sm text-muted-foreground">
             Select a language and click Generate to create AI-powered captions
           </p>
         </div>

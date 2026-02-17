@@ -14,7 +14,11 @@ export const apiClient = axios.create({
 // Request interceptor - add auth token
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = useAuthStore.getState().token;
+    // Try Zustand store first, then localStorage as fallback
+    let token = useAuthStore.getState().token;
+    if (!token && typeof window !== 'undefined') {
+      token = localStorage.getItem('token');
+    }
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }

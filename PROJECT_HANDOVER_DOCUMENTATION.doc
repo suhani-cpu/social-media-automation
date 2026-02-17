@@ -1,0 +1,966 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="UTF-8">
+<title>Social Media Automation Platform - Project Handover Documentation</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+body { font-family: 'Calibri', Arial, sans-serif; font-size: 11pt; line-height: 1.5; margin: 40px; }
+h1 { font-size: 24pt; color: #1a365d; border-bottom: 3px solid #1a365d; padding-bottom: 10px; page-break-before: always; }
+h1:first-of-type { page-break-before: avoid; }
+h2 { font-size: 18pt; color: #2c5282; margin-top: 25px; border-bottom: 1px solid #cbd5e0; padding-bottom: 5px; }
+h3 { font-size: 14pt; color: #2d3748; margin-top: 20px; }
+h4 { font-size: 12pt; color: #4a5568; margin-top: 15px; }
+table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+th, td { border: 1px solid #cbd5e0; padding: 8px 12px; text-align: left; }
+th { background-color: #e2e8f0; font-weight: bold; }
+tr:nth-child(even) { background-color: #f7fafc; }
+code { background-color: #edf2f7; padding: 2px 6px; font-family: 'Consolas', 'Courier New', monospace; font-size: 10pt; }
+pre { background-color: #1a202c; color: #e2e8f0; padding: 15px; overflow-x: auto; font-family: 'Consolas', 'Courier New', monospace; font-size: 9pt; border-radius: 5px; }
+.cover-page { text-align: center; margin-top: 150px; }
+.cover-title { font-size: 36pt; color: #1a365d; margin-bottom: 20px; }
+.cover-subtitle { font-size: 18pt; color: #4a5568; margin-bottom: 40px; }
+.cover-info { font-size: 12pt; color: #718096; margin-top: 100px; }
+.toc { page-break-after: always; }
+.toc a { text-decoration: none; color: #2c5282; }
+.toc ul { list-style-type: none; padding-left: 20px; }
+.toc li { margin: 8px 0; }
+.section { margin-bottom: 30px; }
+.highlight { background-color: #fefcbf; padding: 2px 4px; }
+.success { color: #276749; }
+.warning { color: #c05621; }
+.info-box { background-color: #ebf8ff; border-left: 4px solid #3182ce; padding: 15px; margin: 15px 0; }
+.warning-box { background-color: #fffaf0; border-left: 4px solid #dd6b20; padding: 15px; margin: 15px 0; }
+ul, ol { margin: 10px 0; padding-left: 25px; }
+li { margin: 5px 0; }
+</style>
+</head>
+<body>
+
+<!-- Cover Page -->
+<div class="cover-page">
+<div class="cover-title">Social Media Automation Platform</div>
+<div class="cover-subtitle">Complete Project Handover Documentation</div>
+<div style="margin-top: 60px;">
+<img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiByeD0iMjAiIGZpbGw9IiMxYTM2NWQiLz4KPHBhdGggZD0iTTQ1IDYwSDEwNVY5MEg0NVY2MFoiIGZpbGw9IiNmZmYiLz4KPHBhdGggZD0iTTYwIDQ1SDkwVjEwNUg2MFY0NVoiIGZpbGw9IiNmZmYiLz4KPC9zdmc+" width="100" alt="Logo">
+</div>
+<div class="cover-info">
+<p><strong>Project Name:</strong> Social Media Automation Platform</p>
+<p><strong>Version:</strong> 1.0.0</p>
+<p><strong>Date:</strong> February 2026</p>
+<p><strong>Status:</strong> Production Ready</p>
+</div>
+</div>
+
+<div style="page-break-before: always;"></div>
+
+<!-- Table of Contents -->
+<h1>Table of Contents</h1>
+<div class="toc">
+<ul>
+<li><a href="#section1">1. Executive Summary</a></li>
+<li><a href="#section2">2. Project Overview</a></li>
+<li><a href="#section3">3. Technology Stack</a></li>
+<li><a href="#section4">4. System Architecture</a></li>
+<li><a href="#section5">5. Project Structure</a></li>
+<li><a href="#section6">6. Database Schema</a></li>
+<li><a href="#section7">7. API Documentation</a></li>
+<li><a href="#section8">8. Features Implemented</a></li>
+<li><a href="#section9">9. Setup & Installation</a></li>
+<li><a href="#section10">10. Configuration</a></li>
+<li><a href="#section11">11. Deployment Guide</a></li>
+<li><a href="#section12">12. Security Measures</a></li>
+<li><a href="#section13">13. Testing</a></li>
+<li><a href="#section14">14. Troubleshooting</a></li>
+<li><a href="#section15">15. Future Enhancements</a></li>
+</ul>
+</div>
+
+<!-- Section 1: Executive Summary -->
+<h1 id="section1">1. Executive Summary</h1>
+<div class="section">
+<p>The Social Media Automation Platform is a comprehensive solution designed for Stage OTT content creators to automate multi-platform video publishing. The platform enables users to:</p>
+<ul>
+<li>Upload and process videos automatically into 6 platform-specific formats</li>
+<li>Generate AI-powered captions in 4 languages (English, Hinglish, Haryanvi, Hindi)</li>
+<li>Schedule and publish content to Instagram, YouTube, and Facebook</li>
+<li>Track analytics and performance metrics across all platforms</li>
+</ul>
+
+<h3>Key Metrics</h3>
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Total Files</td><td>200+</td></tr>
+<tr><td>Lines of Code</td><td>~15,000</td></tr>
+<tr><td>Backend Routes</td><td>20+</td></tr>
+<tr><td>Frontend Pages</td><td>12</td></tr>
+<tr><td>React Components</td><td>50+</td></tr>
+<tr><td>Test Coverage (Backend)</td><td>70%</td></tr>
+<tr><td>Test Coverage (Frontend)</td><td>60%</td></tr>
+</table>
+</div>
+
+<!-- Section 2: Project Overview -->
+<h1 id="section2">2. Project Overview</h1>
+<div class="section">
+<h3>Purpose</h3>
+<p>Automate social media content publishing for Stage OTT content creators, reducing manual effort and enabling consistent multi-platform presence.</p>
+
+<h3>Target Users</h3>
+<ul>
+<li>Content creators at Stage OTT</li>
+<li>Social media managers</li>
+<li>Marketing teams</li>
+</ul>
+
+<h3>Core Functionality</h3>
+<ol>
+<li><strong>Video Upload & Processing:</strong> Support for videos up to 500MB with automatic transcoding</li>
+<li><strong>Multi-Platform Publishing:</strong> Instagram (Reels/Feed), YouTube (Shorts/Videos), Facebook (Square/Landscape)</li>
+<li><strong>AI Caption Generation:</strong> 4 languages with 3 variations each</li>
+<li><strong>Scheduling System:</strong> Schedule posts for future dates with automatic publishing</li>
+<li><strong>Analytics Dashboard:</strong> Track performance metrics across all platforms</li>
+</ol>
+</div>
+
+<!-- Section 3: Technology Stack -->
+<h1 id="section3">3. Technology Stack</h1>
+<div class="section">
+<h3>Backend Technologies</h3>
+<table>
+<tr><th>Component</th><th>Technology</th><th>Version</th></tr>
+<tr><td>Framework</td><td>Express.js</td><td>4.18</td></tr>
+<tr><td>Language</td><td>TypeScript</td><td>5.3</td></tr>
+<tr><td>Database</td><td>PostgreSQL</td><td>14+</td></tr>
+<tr><td>ORM</td><td>Prisma</td><td>5.8</td></tr>
+<tr><td>Cache/Queue</td><td>Redis + Bull</td><td>7+ / 4.12</td></tr>
+<tr><td>Storage</td><td>AWS S3</td><td>-</td></tr>
+<tr><td>Video Processing</td><td>FFmpeg</td><td>-</td></tr>
+<tr><td>Authentication</td><td>JWT</td><td>9.0</td></tr>
+<tr><td>Security</td><td>Helmet</td><td>7.1</td></tr>
+<tr><td>Validation</td><td>Zod</td><td>3.22</td></tr>
+</table>
+
+<h3>Frontend Technologies</h3>
+<table>
+<tr><th>Component</th><th>Technology</th><th>Version</th></tr>
+<tr><td>Framework</td><td>Next.js (App Router)</td><td>14.1</td></tr>
+<tr><td>Language</td><td>TypeScript</td><td>5.3</td></tr>
+<tr><td>Styling</td><td>TailwindCSS</td><td>3.4</td></tr>
+<tr><td>UI Components</td><td>shadcn/ui</td><td>-</td></tr>
+<tr><td>State Management</td><td>Zustand (client)</td><td>4.4</td></tr>
+<tr><td>Server State</td><td>React Query</td><td>5.17</td></tr>
+<tr><td>Forms</td><td>React Hook Form + Zod</td><td>7.49</td></tr>
+</table>
+
+<h3>Infrastructure</h3>
+<table>
+<tr><th>Component</th><th>Technology</th></tr>
+<tr><td>Containerization</td><td>Docker 20.10+</td></tr>
+<tr><td>Orchestration</td><td>Docker Compose 2.0+</td></tr>
+<tr><td>Reverse Proxy</td><td>Nginx (Alpine)</td></tr>
+<tr><td>CI/CD</td><td>GitHub Actions</td></tr>
+</table>
+
+<h3>External APIs</h3>
+<ul>
+<li>Instagram Graph API</li>
+<li>YouTube Data API v3</li>
+<li>Facebook Graph API</li>
+<li>Google Drive API</li>
+</ul>
+</div>
+
+<!-- Section 4: System Architecture -->
+<h1 id="section4">4. System Architecture</h1>
+<div class="section">
+<h3>High-Level Architecture</h3>
+<pre>
++-------------------------------------------------------------------+
+|                     FRONTEND (Next.js 14)                          |
+|   [Videos]    [Posts]    [Calendar]    [Analytics]    [Accounts]   |
++-------------------------------------------------------------------+
+                                |
+                                v
++-------------------------------------------------------------------+
+|                    NGINX (Reverse Proxy)                           |
+|           SSL/TLS  -  Rate Limiting  -  Load Balancing             |
++-------------------------------------------------------------------+
+                                |
+                                v
++-------------------------------------------------------------------+
+|                    BACKEND API (Express.js)                        |
+|     [Auth]     [Videos]     [Posts]     [Analytics]    [Accounts]  |
++-------------------------------------------------------------------+
+        |               |               |
+        v               v               v
++---------------+ +---------------+ +---------------+
+|  PostgreSQL   | |    Redis      | |   AWS S3      |
+|  (Database)   | | (Queue/Cache) | |  (Storage)    |
++---------------+ +---------------+ +---------------+
+                        |
+                        v
++-------------------------------------------------------------------+
+|                     QUEUE WORKERS (Bull)                           |
+|   [Video Processing]   [Post Publishing]   [Analytics Sync]        |
++-------------------------------------------------------------------+
+                                |
+                                v
++-------------------------------------------------------------------+
+|                    EXTERNAL PLATFORMS                              |
+|      Instagram API    -    YouTube API    -    Facebook API        |
++-------------------------------------------------------------------+
+</pre>
+
+<h3>Video Processing Pipeline</h3>
+<ol>
+<li>User uploads video via frontend</li>
+<li>Original video saved to S3 (<code>videos/raw/</code>)</li>
+<li>Processing job added to Bull queue</li>
+<li>FFmpeg generates 6 platform-specific formats:
+<ul>
+<li>Instagram Reel (1080x1920, 9:16)</li>
+<li>Instagram Feed (1080x1080, 1:1)</li>
+<li>YouTube Short (1080x1920, 9:16)</li>
+<li>YouTube Video (1920x1080, 16:9)</li>
+<li>Facebook Square (1080x1080, 1:1)</li>
+<li>Facebook Landscape (1920x1080, 16:9)</li>
+</ul>
+</li>
+<li>Thumbnails generated (1s, 3s, 5s)</li>
+<li>Video status updated to READY</li>
+</ol>
+
+<h3>Publishing Flow</h3>
+<ol>
+<li>User creates post with video and caption</li>
+<li>Post scheduled or published immediately</li>
+<li>Scheduler checks every minute for due posts</li>
+<li>Platform-specific service publishes video</li>
+<li>Platform post ID and URL stored</li>
+<li>Analytics synced every 6 hours</li>
+</ol>
+</div>
+
+<!-- Section 5: Project Structure -->
+<h1 id="section5">5. Project Structure</h1>
+<div class="section">
+<pre>
+social-media-automation/
+|
++-- backend/                      # Express.js API
+|   +-- src/
+|   |   +-- app.ts               # Express app configuration
+|   |   +-- server.ts            # Server entry point
+|   |   +-- config/              # Configuration files
+|   |   |   +-- database.ts      # Prisma client setup
+|   |   |   +-- queue.ts         # Bull queue configuration
+|   |   +-- controllers/         # Request handlers
+|   |   |   +-- auth.controller.ts
+|   |   |   +-- video.controller.ts
+|   |   |   +-- post.controller.ts
+|   |   |   +-- analytics.controller.ts
+|   |   +-- services/
+|   |   |   +-- video-processing/ # FFmpeg transcoding
+|   |   |   +-- storage/          # S3 operations
+|   |   |   +-- social-media/     # Platform integrations
+|   |   |   |   +-- instagram/
+|   |   |   |   +-- youtube/
+|   |   |   |   +-- facebook/
+|   |   |   +-- scheduler/        # Cron jobs
+|   |   |   +-- analytics/        # Metrics sync
+|   |   |   +-- caption/          # AI caption generator
+|   |   +-- routes/               # API routes
+|   |   +-- middleware/           # Auth, security, validation
+|   |   +-- workers/              # Queue workers
+|   |   +-- prisma/               # Database schema
+|   +-- tests/                    # Unit & integration tests
+|   +-- Dockerfile
+|   +-- package.json
+|
++-- frontend/                     # Next.js 14 dashboard
+|   +-- src/
+|   |   +-- app/                  # Pages (App Router)
+|   |   |   +-- (auth)/           # Login, Register
+|   |   |   +-- (dashboard)/      # Main app pages
+|   |   |       +-- videos/
+|   |   |       +-- posts/
+|   |   |       +-- calendar/
+|   |   |       +-- analytics/
+|   |   |       +-- accounts/
+|   |   +-- components/           # React components
+|   |   |   +-- ui/               # shadcn/ui components
+|   |   +-- lib/
+|   |       +-- api/              # API client
+|   |       +-- store/            # Zustand stores
+|   |       +-- types/            # TypeScript types
+|   +-- tests/
+|   +-- Dockerfile
+|   +-- package.json
+|
++-- deployment/
+|   +-- nginx/                    # Nginx configuration
+|   +-- scripts/                  # Deployment utilities
+|       +-- deploy.sh
+|       +-- backup-db.sh
+|       +-- restore-db.sh
+|       +-- health-check.sh
+|
++-- .github/workflows/            # CI/CD pipelines
++-- docker-compose.yml
++-- docker-compose.dev.yml
++-- docker-compose.prod.yml
++-- .env.example
++-- README.md
+</pre>
+</div>
+
+<!-- Section 6: Database Schema -->
+<h1 id="section6">6. Database Schema</h1>
+<div class="section">
+<h3>Entity Relationship Overview</h3>
+<pre>
++------------+       +-----------------+       +------------+
+|    User    |------>| SocialAccount   |------>|    Post    |
++------------+       +-----------------+       +------------+
+      |                                              |
+      |                                              |
+      v                                              v
++------------+                                +-----------+
+|   Video    |                                | Analytics |
++------------+                                +-----------+
+</pre>
+
+<h3>User Table</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>UUID</td><td>Primary key</td></tr>
+<tr><td>email</td><td>String</td><td>Unique email address</td></tr>
+<tr><td>password</td><td>String</td><td>Hashed password (bcrypt)</td></tr>
+<tr><td>name</td><td>String</td><td>Display name</td></tr>
+<tr><td>role</td><td>String</td><td>User role (default: "user")</td></tr>
+<tr><td>createdAt</td><td>DateTime</td><td>Creation timestamp</td></tr>
+<tr><td>updatedAt</td><td>DateTime</td><td>Last update timestamp</td></tr>
+</table>
+
+<h3>SocialAccount Table</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>UUID</td><td>Primary key</td></tr>
+<tr><td>userId</td><td>UUID</td><td>Foreign key to User</td></tr>
+<tr><td>platform</td><td>Enum</td><td>INSTAGRAM, FACEBOOK, YOUTUBE, etc.</td></tr>
+<tr><td>accountId</td><td>String</td><td>Platform account ID</td></tr>
+<tr><td>username</td><td>String</td><td>Platform username</td></tr>
+<tr><td>accessToken</td><td>String</td><td>OAuth access token</td></tr>
+<tr><td>refreshToken</td><td>String?</td><td>OAuth refresh token</td></tr>
+<tr><td>tokenExpiry</td><td>DateTime?</td><td>Token expiration time</td></tr>
+<tr><td>status</td><td>Enum</td><td>ACTIVE, EXPIRED, DISCONNECTED, ERROR</td></tr>
+</table>
+
+<h3>Video Table</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>UUID</td><td>Primary key</td></tr>
+<tr><td>userId</td><td>UUID</td><td>Foreign key to User</td></tr>
+<tr><td>title</td><td>String</td><td>Video title</td></tr>
+<tr><td>description</td><td>String?</td><td>Video description</td></tr>
+<tr><td>status</td><td>Enum</td><td>PENDING, PROCESSING, READY, FAILED</td></tr>
+<tr><td>duration</td><td>Int?</td><td>Duration in seconds</td></tr>
+<tr><td>fileSize</td><td>Int?</td><td>File size in bytes</td></tr>
+<tr><td>rawVideoUrl</td><td>String?</td><td>Original video S3 URL</td></tr>
+<tr><td>thumbnailUrl</td><td>String?</td><td>Thumbnail URL</td></tr>
+<tr><td>instagramReelUrl</td><td>String?</td><td>Instagram Reel format URL</td></tr>
+<tr><td>instagramFeedUrl</td><td>String?</td><td>Instagram Feed format URL</td></tr>
+<tr><td>youtubeShortsUrl</td><td>String?</td><td>YouTube Shorts format URL</td></tr>
+<tr><td>youtubeVideoUrl</td><td>String?</td><td>YouTube Video format URL</td></tr>
+<tr><td>facebookSquareUrl</td><td>String?</td><td>Facebook Square format URL</td></tr>
+<tr><td>facebookLandscapeUrl</td><td>String?</td><td>Facebook Landscape format URL</td></tr>
+<tr><td>language</td><td>String?</td><td>Video language</td></tr>
+<tr><td>tags</td><td>String[]</td><td>Video tags</td></tr>
+</table>
+
+<h3>Post Table</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>UUID</td><td>Primary key</td></tr>
+<tr><td>userId</td><td>UUID</td><td>Foreign key to User</td></tr>
+<tr><td>videoId</td><td>UUID?</td><td>Foreign key to Video</td></tr>
+<tr><td>accountId</td><td>UUID</td><td>Foreign key to SocialAccount</td></tr>
+<tr><td>caption</td><td>String</td><td>Post caption text</td></tr>
+<tr><td>language</td><td>Enum</td><td>ENGLISH, HINGLISH, HARYANVI, HINDI</td></tr>
+<tr><td>hashtags</td><td>String[]</td><td>Post hashtags</td></tr>
+<tr><td>platform</td><td>Enum</td><td>Target platform</td></tr>
+<tr><td>postType</td><td>Enum</td><td>FEED, REEL, SHORT, VIDEO</td></tr>
+<tr><td>status</td><td>Enum</td><td>DRAFT, SCHEDULED, PUBLISHED, FAILED</td></tr>
+<tr><td>scheduledFor</td><td>DateTime?</td><td>Scheduled publish time</td></tr>
+<tr><td>publishedAt</td><td>DateTime?</td><td>Actual publish time</td></tr>
+<tr><td>platformPostId</td><td>String?</td><td>Platform's post ID</td></tr>
+<tr><td>platformUrl</td><td>String?</td><td>URL on platform</td></tr>
+</table>
+
+<h3>Analytics Table</h3>
+<table>
+<tr><th>Column</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>UUID</td><td>Primary key</td></tr>
+<tr><td>postId</td><td>UUID</td><td>Foreign key to Post</td></tr>
+<tr><td>accountId</td><td>UUID</td><td>Foreign key to SocialAccount</td></tr>
+<tr><td>views</td><td>Int</td><td>View count</td></tr>
+<tr><td>likes</td><td>Int</td><td>Like count</td></tr>
+<tr><td>comments</td><td>Int</td><td>Comment count</td></tr>
+<tr><td>shares</td><td>Int</td><td>Share count</td></tr>
+<tr><td>engagement</td><td>Float</td><td>Engagement rate</td></tr>
+<tr><td>metricsDate</td><td>DateTime</td><td>Date of metrics</td></tr>
+</table>
+</div>
+
+<!-- Section 7: API Documentation -->
+<h1 id="section7">7. API Documentation</h1>
+<div class="section">
+<h3>Base URL</h3>
+<ul>
+<li>Development: <code>http://localhost:3000/api</code></li>
+<li>Production: <code>https://your-domain.com/api</code></li>
+</ul>
+
+<h3>Authentication</h3>
+<p>All protected endpoints require a JWT token in the Authorization header:</p>
+<pre>Authorization: Bearer &lt;token&gt;</pre>
+
+<h3>Authentication Endpoints</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>POST</td><td>/api/auth/register</td><td>Register new user</td></tr>
+<tr><td>POST</td><td>/api/auth/login</td><td>Login user</td></tr>
+<tr><td>POST</td><td>/api/auth/logout</td><td>Logout user</td></tr>
+</table>
+
+<h4>Register User Example</h4>
+<pre>
+POST /api/auth/register
+
+Request Body:
+{
+  "email": "user@example.com",
+  "password": "securePassword123",
+  "name": "John Doe"
+}
+
+Response (201):
+{
+  "user": { "id": "...", "email": "...", "name": "..." },
+  "token": "eyJhbG..."
+}
+</pre>
+
+<h3>Video Endpoints</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>POST</td><td>/api/videos/upload</td><td>Upload video (max 500MB)</td></tr>
+<tr><td>GET</td><td>/api/videos</td><td>List videos (with filters)</td></tr>
+<tr><td>GET</td><td>/api/videos/:id</td><td>Get video details</td></tr>
+<tr><td>DELETE</td><td>/api/videos/:id</td><td>Delete video</td></tr>
+</table>
+
+<h4>Upload Video Example</h4>
+<pre>
+POST /api/videos/upload
+Content-Type: multipart/form-data
+
+Form Data:
+- video: File (max 500MB)
+- title: String
+- language: ENGLISH | HINGLISH | HARYANVI | HINDI
+
+Response (201):
+{
+  "id": "...",
+  "title": "...",
+  "status": "PENDING",
+  "rawVideoUrl": "..."
+}
+</pre>
+
+<h3>Post Endpoints</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>POST</td><td>/api/posts</td><td>Create post</td></tr>
+<tr><td>GET</td><td>/api/posts</td><td>List posts (with filters)</td></tr>
+<tr><td>GET</td><td>/api/posts/:id</td><td>Get post details</td></tr>
+<tr><td>POST</td><td>/api/posts/:id/publish</td><td>Publish post</td></tr>
+<tr><td>DELETE</td><td>/api/posts/:id</td><td>Delete post</td></tr>
+<tr><td>POST</td><td>/api/posts/generate-caption</td><td>Generate AI captions</td></tr>
+</table>
+
+<h4>Create Post Example</h4>
+<pre>
+POST /api/posts
+
+Request Body:
+{
+  "videoId": "video-uuid",
+  "accountId": "account-uuid",
+  "caption": "Check out this video!",
+  "language": "ENGLISH",
+  "hashtags": ["#viral", "#content"],
+  "platform": "INSTAGRAM",
+  "postType": "REEL",
+  "scheduledFor": "2024-02-01T10:00:00Z"
+}
+
+Response (201):
+{
+  "id": "...",
+  "status": "SCHEDULED",
+  ...
+}
+</pre>
+
+<h3>Account Endpoints</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>POST</td><td>/api/accounts</td><td>Connect social media account</td></tr>
+<tr><td>GET</td><td>/api/accounts</td><td>List connected accounts</td></tr>
+<tr><td>DELETE</td><td>/api/accounts/:id</td><td>Disconnect account</td></tr>
+</table>
+
+<h3>Analytics Endpoints</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/analytics</td><td>Get aggregated analytics</td></tr>
+<tr><td>GET</td><td>/api/analytics/posts/:id</td><td>Get post-specific analytics</td></tr>
+</table>
+
+<h3>Rate Limits</h3>
+<table>
+<tr><th>Endpoint</th><th>Limit</th></tr>
+<tr><td>General API</td><td>100 requests / 15 minutes</td></tr>
+<tr><td>Authentication</td><td>5 requests / 15 minutes</td></tr>
+<tr><td>Upload</td><td>10 requests / hour</td></tr>
+<tr><td>Caption Generation</td><td>20 requests / hour</td></tr>
+<tr><td>Analytics</td><td>30 requests / 15 minutes</td></tr>
+</table>
+</div>
+
+<!-- Section 8: Features Implemented -->
+<h1 id="section8">8. Features Implemented</h1>
+<div class="section">
+<h3>Video Processing</h3>
+<ul>
+<li>Upload videos up to 500MB</li>
+<li>Automatic transcoding to 6 formats</li>
+<li>Thumbnail generation at 1s, 3s, 5s</li>
+<li>S3 storage with organized structure</li>
+<li>Real-time status tracking</li>
+</ul>
+
+<h3>Multi-Platform Publishing</h3>
+<ul>
+<li>Instagram (Reels & Feed)</li>
+<li>YouTube (Shorts & Videos)</li>
+<li>Facebook (Square & Landscape)</li>
+<li>OAuth authentication for each platform</li>
+<li>Token auto-refresh</li>
+</ul>
+
+<h3>AI Caption Generation</h3>
+<ul>
+<li>4 languages: English, Hinglish, Haryanvi, Hindi</li>
+<li>3 variations per request</li>
+<li>Editable captions</li>
+<li>Hashtag extraction and suggestions</li>
+</ul>
+
+<h3>Scheduling & Automation</h3>
+<ul>
+<li>Schedule posts for future dates</li>
+<li>Publish immediately option</li>
+<li>Automatic publishing via cron jobs</li>
+<li>Status transitions (DRAFT -> SCHEDULED -> PUBLISHING -> PUBLISHED)</li>
+</ul>
+
+<h3>Analytics Dashboard</h3>
+<ul>
+<li>Multi-platform metrics (views, likes, comments, shares)</li>
+<li>Engagement rate calculation</li>
+<li>Time-series data (daily snapshots)</li>
+<li>Automatic sync every 6 hours</li>
+<li>Top performing posts view</li>
+</ul>
+
+<h3>Frontend Pages</h3>
+<ol>
+<li><strong>Login/Register</strong> - User authentication</li>
+<li><strong>Dashboard</strong> - Overview and quick actions</li>
+<li><strong>Videos</strong> - Video library with upload</li>
+<li><strong>Post Creator</strong> - 5-step wizard for creating posts</li>
+<li><strong>Post Queue</strong> - Manage scheduled/published posts</li>
+<li><strong>Calendar</strong> - Calendar view of scheduled posts</li>
+<li><strong>Analytics</strong> - Performance metrics dashboard</li>
+<li><strong>Accounts</strong> - Manage connected social accounts</li>
+<li><strong>Settings</strong> - User preferences</li>
+</ol>
+</div>
+
+<!-- Section 9: Setup & Installation -->
+<h1 id="section9">9. Setup & Installation</h1>
+<div class="section">
+<h3>Prerequisites</h3>
+<ul>
+<li>Node.js 20+</li>
+<li>PostgreSQL 14+</li>
+<li>Redis 7+</li>
+<li>FFmpeg</li>
+<li>Docker & Docker Compose (recommended)</li>
+<li>AWS S3 bucket</li>
+<li>Social media API credentials</li>
+</ul>
+
+<h3>Quick Start with Docker</h3>
+<pre>
+# Clone repository
+git clone &lt;repository-url&gt;
+cd social-media-automation
+
+# Start services
+docker-compose up -d
+
+# Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
+
+# Setup database
+cd backend
+npx prisma generate
+npx prisma migrate dev
+
+# Start development servers
+npm run dev  # From root directory
+</pre>
+
+<h3>Manual Setup</h3>
+<h4>1. Install Dependencies</h4>
+<pre>
+# Root dependencies
+npm install
+
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+</pre>
+
+<h4>2. Configure Environment</h4>
+<pre>
+# Copy example files
+cp .env.example .env
+cd backend && cp .env.example .env
+cd ../frontend && cp .env.example .env.local
+</pre>
+
+<h4>3. Setup Database</h4>
+<pre>
+cd backend
+npx prisma generate
+npx prisma migrate dev
+</pre>
+
+<h4>4. Start Services</h4>
+<pre>
+# Terminal 1: Backend API
+cd backend && npm run dev
+
+# Terminal 2: Queue Worker
+cd backend && npm run worker:dev
+
+# Terminal 3: Frontend
+cd frontend && npm run dev
+</pre>
+
+<h4>5. Access Application</h4>
+<ul>
+<li>Frontend: <code>http://localhost:3001</code></li>
+<li>Backend API: <code>http://localhost:3000</code></li>
+<li>API Health Check: <code>http://localhost:3000/health</code></li>
+</ul>
+</div>
+
+<!-- Section 10: Configuration -->
+<h1 id="section10">10. Configuration</h1>
+<div class="section">
+<h3>Backend Environment Variables (.env)</h3>
+<pre>
+# Node Environment
+NODE_ENV=development
+
+# Server
+PORT=3000
+FRONTEND_URL=http://localhost:3001
+
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/social_media
+
+# Redis
+REDIS_URL=redis://localhost:6379
+REDIS_PASSWORD=your-redis-password
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRY=7d
+
+# AWS S3
+AWS_ACCESS_KEY_ID=your-aws-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret
+AWS_S3_BUCKET=social-media-automation
+AWS_REGION=us-east-1
+
+# Instagram API
+INSTAGRAM_APP_ID=your-app-id
+INSTAGRAM_APP_SECRET=your-app-secret
+INSTAGRAM_REDIRECT_URI=http://localhost:3000/api/oauth/instagram/callback
+
+# YouTube API
+YOUTUBE_CLIENT_ID=your-client-id
+YOUTUBE_CLIENT_SECRET=your-client-secret
+YOUTUBE_REDIRECT_URI=http://localhost:3000/api/oauth/youtube/callback
+
+# Facebook API
+FACEBOOK_APP_ID=your-app-id
+FACEBOOK_APP_SECRET=your-app-secret
+FACEBOOK_REDIRECT_URI=http://localhost:3000/api/oauth/facebook/callback
+
+# Logging
+LOG_LEVEL=info
+</pre>
+
+<h3>Frontend Environment Variables (.env.local)</h3>
+<pre>
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_MAX_UPLOAD_SIZE=524288000
+</pre>
+</div>
+
+<!-- Section 11: Deployment Guide -->
+<h1 id="section11">11. Deployment Guide</h1>
+<div class="section">
+<h3>Docker Production Deployment</h3>
+<h4>1. Configure Production Environment</h4>
+<pre>
+cp .env.production.example .env
+nano .env  # Edit with production values
+</pre>
+
+<h4>2. Build and Deploy</h4>
+<pre>
+docker-compose -f docker-compose.prod.yml up -d --build
+</pre>
+
+<h4>3. Setup SSL (with Let's Encrypt)</h4>
+<pre>
+./deployment/scripts/setup-ssl.sh your-domain.com
+</pre>
+
+<h4>4. Verify Deployment</h4>
+<pre>
+./deployment/scripts/health-check.sh
+</pre>
+
+<h3>Server Requirements</h3>
+<table>
+<tr><th>Setup</th><th>RAM</th><th>CPU</th><th>Storage</th><th>Use Case</th></tr>
+<tr><td>Minimum</td><td>4GB</td><td>2 cores</td><td>50GB</td><td>Small to medium traffic</td></tr>
+<tr><td>Recommended</td><td>8GB+</td><td>4 cores</td><td>100GB+</td><td>High traffic, video processing heavy</td></tr>
+</table>
+
+<h3>Maintenance Scripts</h3>
+<pre>
+# Database backup
+./deployment/scripts/backup-db.sh
+
+# Database restore
+./deployment/scripts/restore-db.sh backup-file.sql
+
+# View logs
+./deployment/scripts/logs.sh [service-name]
+
+# Health check
+./deployment/scripts/health-check.sh
+</pre>
+</div>
+
+<!-- Section 12: Security Measures -->
+<h1 id="section12">12. Security Measures</h1>
+<div class="section">
+<h3>Authentication & Authorization</h3>
+<ul>
+<li>JWT authentication with httpOnly cookies</li>
+<li>Bcrypt password hashing (10 rounds)</li>
+<li>Session management</li>
+<li>Role-based access control</li>
+</ul>
+
+<h3>API Security</h3>
+<ul>
+<li>Helmet.js security headers (CSP, HSTS, XSS protection)</li>
+<li>Rate limiting per endpoint</li>
+<li>Input sanitization (XSS prevention)</li>
+<li>CORS whitelist</li>
+<li>Request validation with Zod schemas</li>
+</ul>
+
+<h3>Data Protection</h3>
+<ul>
+<li>SQL injection prevention (Prisma ORM)</li>
+<li>Data encryption at rest (database)</li>
+<li>Data encryption in transit (HTTPS/TLS)</li>
+<li>Non-root Docker containers</li>
+</ul>
+
+<h3>Security Headers</h3>
+<pre>
+Content-Security-Policy: default-src 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Strict-Transport-Security: max-age=31536000
+</pre>
+</div>
+
+<!-- Section 13: Testing -->
+<h1 id="section13">13. Testing</h1>
+<div class="section">
+<h3>Test Coverage</h3>
+<table>
+<tr><th>Component</th><th>Coverage</th><th>Test Cases</th></tr>
+<tr><td>Backend</td><td>70%</td><td>24 unit tests, 12 integration tests</td></tr>
+<tr><td>Frontend</td><td>60%</td><td>8 component tests, 4 store tests</td></tr>
+</table>
+
+<h3>Running Tests</h3>
+<pre>
+# Backend tests
+cd backend
+npm test                    # Run all tests with coverage
+npm run test:unit          # Unit tests only
+npm run test:integration   # Integration tests only
+npm run test:watch         # Watch mode
+
+# Frontend tests
+cd frontend
+npm test                    # Run all tests with coverage
+npm run test:watch         # Watch mode
+</pre>
+
+<h3>CI/CD Pipeline</h3>
+<p>Automated on every push/PR:</p>
+<ol>
+<li>Lint check</li>
+<li>Format check</li>
+<li>Type checking</li>
+<li>Test execution</li>
+<li>Build verification</li>
+<li>Security audit</li>
+</ol>
+</div>
+
+<!-- Section 14: Troubleshooting -->
+<h1 id="section14">14. Troubleshooting</h1>
+<div class="section">
+<h3>Video Processing Fails</h3>
+<pre>
+# Check FFmpeg installation
+ffmpeg -version
+
+# Verify S3 credentials
+aws s3 ls s3://your-bucket
+
+# Check worker logs
+docker logs worker-container
+</pre>
+
+<h3>Publishing Fails</h3>
+<ul>
+<li>Verify OAuth tokens are valid</li>
+<li>Check token expiry and refresh</li>
+<li>Review platform API rate limits</li>
+<li>Ensure platform-specific requirements are met</li>
+</ul>
+
+<h3>Database Connection Errors</h3>
+<pre>
+# Verify PostgreSQL is running
+docker ps | grep postgres
+
+# Check connection
+psql $DATABASE_URL
+
+# Run migrations
+cd backend && npx prisma migrate dev
+</pre>
+
+<h3>Port Already in Use</h3>
+<pre>
+# Find and kill process
+lsof -ti:3000 | xargs kill
+
+# Restart server
+npm run dev
+</pre>
+
+<h3>Redis Connection Issues</h3>
+<pre>
+# Check Redis status
+redis-cli ping
+
+# Restart Redis
+docker restart redis-container
+</pre>
+</div>
+
+<!-- Section 15: Future Enhancements -->
+<h1 id="section15">15. Future Enhancements</h1>
+<div class="section">
+<h3>Suggested Features</h3>
+<ul>
+<li>Stage OTT API integration (automatic video fetching)</li>
+<li>AI-powered best time to post suggestions</li>
+<li>Bulk upload (multiple videos at once)</li>
+<li>Advanced analytics (A/B testing captions)</li>
+<li>Mobile app (React Native)</li>
+<li>Video editor (trim, filters, text overlays)</li>
+<li>Team collaboration (multiple users)</li>
+<li>Email notifications</li>
+<li>Webhook support</li>
+<li>Advanced scheduling (recurring posts)</li>
+<li>Brand kit (logo overlays, intros/outros)</li>
+</ul>
+
+<h3>Infrastructure Improvements</h3>
+<ul>
+<li>Kubernetes deployment</li>
+<li>Multi-region deployment</li>
+<li>CDN integration (CloudFront)</li>
+<li>Advanced monitoring (Sentry, DataDog)</li>
+<li>Automated scaling</li>
+<li>Blue-green deployment</li>
+</ul>
+</div>
+
+<!-- Footer -->
+<div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #cbd5e0; text-align: center; color: #718096;">
+<p><strong>Document Version:</strong> 1.0</p>
+<p><strong>Last Updated:</strong> February 2026</p>
+<p><strong>Project Status:</strong> Complete and Production Ready</p>
+</div>
+
+</body>
+</html>

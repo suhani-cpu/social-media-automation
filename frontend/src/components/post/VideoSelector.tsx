@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, CheckCircle } from 'lucide-react';
+import { Search, Video as VideoIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { videosApi } from '@/lib/api/videos';
+import { Card, CardContent } from '@/components/ui/card';
+import apiClient from '@/lib/api/client';
 import { Video } from '@/lib/types/api';
-import { formatFileSize, formatDateTime } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface VideoSelectorProps {
   selectedVideo: Video | null;
@@ -16,112 +16,98 @@ interface VideoSelectorProps {
 }
 
 export function VideoSelector({ selectedVideo, onSelect }: VideoSelectorProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { data: videos, isLoading } = useQuery({
     queryKey: ['videos'],
     queryFn: async () => {
-      const response = await videosApi.getAll();
-      return response.videos.filter((v) => v.status === 'READY');
+      const response = await apiClient.get<{ videos: Video[] }>('/videos');
+      return response.data.videos;
     },
   });
 
-  const filteredVideos = videos?.filter((video) =>
-    video.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const readyVideos = videos?.filter((v) => v.status === 'READY') || [];
+
+  const filteredVideos = readyVideos.filter((video) =>
+    video.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (isLoading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading videos...</div>;
+  }
+
+  if (readyVideos.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <VideoIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">No ready videos found</h3>
+        <p className="text-muted-foreground">
+          Upload and process a video first before creating a post.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold">Select Video</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="text-lg font-semibold mb-2">Select Video</h3>
+        <p className="text-sm text-muted-foreground mb-4">
           Choose a processed video to create your post
         </p>
       </div>
 
       {/* Search */}
-      <div>
-        <Label htmlFor="video-search">Search Videos</Label>
-        <div className="relative mt-2">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="space-y-2">
+        <Label htmlFor="search">Search Videos</Label>
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            id="video-search"
+            id="search"
             placeholder="Search by title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
           />
         </div>
       </div>
 
       {/* Video Grid */}
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="animate-pulse rounded-lg border p-4">
-              <div className="h-24 rounded bg-gray-200"></div>
-              <div className="mt-2 h-4 rounded bg-gray-200"></div>
-            </div>
-          ))}
-        </div>
-      ) : filteredVideos && filteredVideos.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {filteredVideos.map((video) => (
-            <div
-              key={video.id}
-              onClick={() => onSelect(video)}
-              className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-md ${
-                selectedVideo?.id === video.id
-                  ? 'border-primary bg-primary/5'
-                  : 'border-gray-200'
-              }`}
-            >
-              <div className="flex gap-4">
-                {/* Thumbnail */}
-                <div className="relative h-20 w-32 flex-shrink-0 overflow-hidden rounded">
-                  {video.thumbnailUrl ? (
-                    <img
-                      src={video.thumbnailUrl}
-                      alt={video.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gray-100">
-                      <span className="text-xs text-muted-foreground">No thumbnail</span>
-                    </div>
-                  )}
-                  {selectedVideo?.id === video.id && (
-                    <div className="absolute right-1 top-1">
-                      <CheckCircle className="h-5 w-5 text-primary" fill="white" />
-                    </div>
-                  )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto">
+        {filteredVideos.map((video) => (
+          <Card
+            key={video.id}
+            className={cn(
+              'cursor-pointer transition-all hover:border-primary',
+              selectedVideo?.id === video.id && 'border-primary bg-primary/5'
+            )}
+            onClick={() => onSelect(video)}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-20 h-20 bg-muted rounded flex items-center justify-center">
+                  <VideoIcon className="h-8 w-8 text-muted-foreground" />
                 </div>
-
-                {/* Info */}
-                <div className="flex-1">
-                  <h4 className="font-medium line-clamp-1">{video.title}</h4>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{formatFileSize(video.size)}</span>
-                    <span>•</span>
-                    <span>{formatDateTime(video.createdAt)}</span>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold truncate">{video.title}</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(video.createdAt).toLocaleDateString()}
+                  </p>
                   <div className="mt-2">
-                    <Badge variant="success" className="text-xs">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500">
                       Ready
-                    </Badge>
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            {videos?.length === 0
-              ? 'No ready videos found. Upload and process a video first.'
-              : 'No videos match your search.'}
-          </p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {filteredVideos.length === 0 && searchTerm && (
+        <div className="text-center py-8 text-muted-foreground">
+          No videos found matching "{searchTerm}"
         </div>
       )}
     </div>

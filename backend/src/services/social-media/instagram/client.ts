@@ -1,125 +1,146 @@
-import axios from 'axios';
 import { Post, Video, SocialAccount } from '@prisma/client';
-import { config } from '../../../config/env';
+import { uploadVideoToInstagram, InstagramUploadOptions } from './upload';
+import { getInstagramMediaInsights, InstagramAnalytics } from './analytics';
 import { logger } from '../../../utils/logger';
 
-const INSTAGRAM_API_BASE = 'https://graph.facebook.com/v18.0';
-
+/**
+ * Publish post to Instagram
+ */
 export async function publishToInstagram(
   post: Post,
   video: Video,
   account: SocialAccount
 ): Promise<{ id: string; permalink: string }> {
-  try {
-    logger.info(`Publishing to Instagram: ${post.id}`);
+  logger.info('Publishing to Instagram', {
+    postId: post.id,
+    videoId: video.id,
+    accountId: account.id,
+    postType: post.postType,
+  });
 
-    // Select appropriate video URL based on post type
-    const videoUrl =
-      post.postType === 'REEL' ? video.instagramReelUrl : video.instagramFeedUrl;
+  try {
+    // Determine which video URL to use based on post type
+    let videoUrl: string | null;
+
+    if (post.postType === 'REEL') {
+      // Use vertical format for Reels
+      videoUrl = video.instagramReelUrl;
+    } else {
+      // Use square format for Feed posts
+      videoUrl = video.instagramFeedUrl;
+    }
 
     if (!videoUrl) {
-      throw new Error('Video not processed for Instagram');
-    }
-
-    // Step 1: Create container
-    const containerResponse = await axios.post(
-      `${INSTAGRAM_API_BASE}/${account.accountId}/media`,
-      {
-        video_url: videoUrl,
-        caption: `${post.caption}\n\n${post.hashtags.join(' ')}`,
-        media_type: post.postType === 'REEL' ? 'REELS' : 'VIDEO',
-        access_token: account.accessToken,
-      }
-    );
-
-    const containerId = containerResponse.data.id;
-    logger.info(`Instagram container created: ${containerId}`);
-
-    // Step 2: Wait for container to be ready (poll status)
-    let isReady = false;
-    let attempts = 0;
-    const maxAttempts = 30;
-
-    while (!isReady && attempts < maxAttempts) {
-      await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
-
-      const statusResponse = await axios.get(
-        `${INSTAGRAM_API_BASE}/${containerId}`,
-        {
-          params: {
-            fields: 'status_code',
-            access_token: account.accessToken,
-          },
-        }
+      throw new Error(
+        `Video not processed for Instagram ${post.postType}. Video status: ${video.status}`
       );
-
-      const statusCode = statusResponse.data.status_code;
-
-      if (statusCode === 'FINISHED') {
-        isReady = true;
-      } else if (statusCode === 'ERROR') {
-        throw new Error('Instagram container processing failed');
-      }
-
-      attempts++;
     }
 
-    if (!isReady) {
-      throw new Error('Instagram container timed out');
+    // Build caption from post caption and hashtags
+    let caption = post.caption;
+    if (post.hashtags && post.hashtags.length > 0) {
+      caption += '\n\n' + post.hashtags.join(' ');
     }
 
-    // Step 3: Publish container
-    const publishResponse = await axios.post(
-      `${INSTAGRAM_API_BASE}/${account.accountId}/media_publish`,
-      {
-        creation_id: containerId,
-        access_token: account.accessToken,
-      }
+    // Instagram has a 2,200 character limit for captions
+    if (caption.length > 2200) {
+      caption = caption.substring(0, 2197) + '...';
+    }
+
+    // Get Instagram account ID from metadata
+    // The account.accountId should contain the Instagram Business Account ID
+    const instagramAccountId = account.accountId;
+
+    // Prepare upload options
+    const uploadOptions: InstagramUploadOptions = {
+      videoPath: videoUrl,
+      caption,
+      shareToFeed: true, // Share Reels to feed by default
+      coverUrl: video.thumbnailUrl || undefined,
+    };
+
+    // Upload to Instagram
+    const result = await uploadVideoToInstagram(
+      instagramAccountId,
+      account.accessToken,
+      uploadOptions
     );
 
-    const postId = publishResponse.data.id;
-
-    // Get permalink
-    const postResponse = await axios.get(
-      `${INSTAGRAM_API_BASE}/${postId}`,
-      {
-        params: {
-          fields: 'permalink',
-          access_token: account.accessToken,
-        },
-      }
-    );
-
-    logger.info(`Instagram post published: ${postId}`);
+    logger.info('Successfully published to Instagram', {
+      postId: post.id,
+      mediaId: result.id,
+      permalink: result.permalink,
+    });
 
     return {
-      id: postId,
-      permalink: postResponse.data.permalink,
+      id: result.id,
+      permalink: result.permalink,
     };
-  } catch (error: any) {
-    logger.error('Instagram publish error:', error.response?.data || error.message);
-    throw new Error(`Instagram publish failed: ${error.response?.data?.error?.message || error.message}`);
+  } catch (error) {
+    logger.error('Failed to publish to Instagram:', {
+      postId: post.id,
+      videoId: video.id,
+      accountId: account.id,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
+    throw error;
   }
 }
 
+/**
+ * Get Instagram insights for a post
+ */
 export async function getInstagramInsights(
-  postId: string,
+  mediaId: string,
   accessToken: string
-): Promise<any> {
-  try {
-    const response = await axios.get(
-      `${INSTAGRAM_API_BASE}/${postId}/insights`,
-      {
-        params: {
-          metric: 'engagement,impressions,reach,saved,video_views',
-          access_token: accessToken,
-        },
-      }
-    );
+): Promise<InstagramAnalytics> {
+  logger.info('Fetching Instagram insights', { mediaId });
 
-    return response.data.data;
-  } catch (error: any) {
-    logger.error('Instagram insights error:', error.response?.data || error.message);
-    return null;
+  try {
+    const analytics = await getInstagramMediaInsights(mediaId, accessToken);
+
+    logger.info('Instagram insights fetched', {
+      mediaId,
+      views: analytics.views,
+      likes: analytics.likes,
+    });
+
+    return analytics;
+  } catch (error) {
+    logger.error('Failed to fetch Instagram insights:', {
+      mediaId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
+    throw error;
   }
+}
+
+/**
+ * Validate Instagram media ID format
+ */
+export function isValidInstagramMediaId(mediaId: string): boolean {
+  // Instagram media IDs are numeric strings
+  return /^\d+_\d+$/.test(mediaId) || /^\d+$/.test(mediaId);
+}
+
+/**
+ * Extract media ID from Instagram URL
+ */
+export function extractInstagramMediaId(url: string): string | null {
+  const patterns = [
+    /instagram\.com\/p\/([a-zA-Z0-9_-]+)/,
+    /instagram\.com\/reel\/([a-zA-Z0-9_-]+)/,
+    /instagram\.com\/tv\/([a-zA-Z0-9_-]+)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
 }

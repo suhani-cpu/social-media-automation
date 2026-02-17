@@ -3,16 +3,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { Instagram, Youtube, Facebook, CheckCircle, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
-import { Card } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { accountsApi } from '@/lib/api/accounts';
 import { Platform, PostType } from '@/lib/types/api';
-
-interface PlatformSelection {
-  platform: Platform;
-  accountId: string;
-  postType: PostType;
-}
+import { PlatformSelection } from '@/lib/types/post';
+import { cn } from '@/lib/utils';
 
 interface PlatformSelectorProps {
   selections: PlatformSelection[];
@@ -23,30 +25,36 @@ const platformConfig = {
   INSTAGRAM: {
     name: 'Instagram',
     icon: Instagram,
-    color: 'text-pink-600',
+    color: 'text-[hsl(var(--instagram-pink))]',
+    gradient: 'instagram-gradient',
+    glow: 'instagram-glow',
     postTypes: [
-      { value: 'REEL', label: 'Reel (9:16)' },
-      { value: 'FEED', label: 'Feed (1:1)' },
-      { value: 'STORY', label: 'Story' },
+      { value: 'REEL' as PostType, label: 'Reel 🎬 (9:16)' },
+      { value: 'FEED' as PostType, label: 'Feed 📸 (1:1)' },
+      { value: 'STORY' as PostType, label: 'Story ⚡' },
     ],
   },
   YOUTUBE: {
     name: 'YouTube',
     icon: Youtube,
-    color: 'text-red-600',
+    color: 'text-[hsl(var(--youtube-red))]',
+    gradient: 'youtube-gradient',
+    glow: 'youtube-glow',
     postTypes: [
-      { value: 'SHORT', label: 'Shorts (9:16)' },
-      { value: 'VIDEO', label: 'Video (16:9)' },
-      { value: 'FEED', label: 'Square (1:1)' },
+      { value: 'SHORT' as PostType, label: 'Shorts 📱 (9:16)' },
+      { value: 'VIDEO' as PostType, label: 'Video 🎥 (16:9)' },
+      { value: 'FEED' as PostType, label: 'Square ▪️ (1:1)' },
     ],
   },
   FACEBOOK: {
     name: 'Facebook',
     icon: Facebook,
-    color: 'text-blue-600',
+    color: 'text-[hsl(var(--facebook-blue))]',
+    gradient: 'facebook-gradient',
+    glow: 'facebook-glow',
     postTypes: [
-      { value: 'FEED', label: 'Feed Post (1:1)' },
-      { value: 'VIDEO', label: 'Video (16:9)' },
+      { value: 'FEED' as PostType, label: 'Feed Post 📱 (1:1)' },
+      { value: 'VIDEO' as PostType, label: 'Video 🎞️ (16:9)' },
     ],
   },
 };
@@ -81,7 +89,7 @@ export function PlatformSelector({ selections, onSelectionChange }: PlatformSele
       const platformAccounts = getAccountsForPlatform(platform);
       if (platformAccounts.length === 0) return;
 
-      const defaultPostType = platformConfig[platform].postTypes[0].value as PostType;
+      const defaultPostType = platformConfig[platform].postTypes[0].value;
       onSelectionChange([
         ...selections,
         {
@@ -93,91 +101,104 @@ export function PlatformSelector({ selections, onSelectionChange }: PlatformSele
     }
   };
 
-  const updatePlatformSelection = (
-    platform: Platform,
-    updates: Partial<PlatformSelection>
-  ) => {
+  const updatePlatformSelection = (platform: Platform, updates: Partial<PlatformSelection>) => {
     onSelectionChange(
       selections.map((s) => (s.platform === platform ? { ...s, ...updates } : s))
     );
   };
 
   if (isLoading) {
+    return <div className="text-center py-8 text-muted-foreground">Loading platforms...</div>;
+  }
+
+  const hasNoAccounts = !accounts || accounts.length === 0;
+
+  if (hasNoAccounts) {
     return (
       <div className="space-y-4">
-        <div className="animate-pulse space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-24 rounded-lg bg-gray-200"></div>
-          ))}
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Select Platforms</h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Choose platforms and configure post types
+          </p>
+        </div>
+        <div className="text-center py-12">
+          <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <h4 className="text-lg font-semibold mb-2">No connected accounts</h4>
+          <p className="text-muted-foreground">
+            Connect your social media accounts to create posts
+          </p>
         </div>
       </div>
     );
   }
 
-  const hasNoAccounts = !accounts || accounts.length === 0;
-
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold">Select Platforms</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="text-lg font-semibold mb-2">Select Platforms</h3>
+        <p className="text-sm text-muted-foreground mb-4">
           Choose platforms and configure post types
         </p>
       </div>
 
-      {hasNoAccounts ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h4 className="mt-4 font-semibold">No connected accounts</h4>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Connect your social media accounts to create posts
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {(Object.keys(platformConfig) as Platform[]).map((platform) => {
-            const config = platformConfig[platform];
-            const Icon = config.icon;
-            const isSelected = isPlatformSelected(platform);
-            const selection = getPlatformSelection(platform);
-            const platformAccounts = getAccountsForPlatform(platform);
-            const hasAccounts = platformAccounts.length > 0;
+      <div className="space-y-3">
+        {(Object.keys(platformConfig) as Platform[]).map((platform) => {
+          const config = platformConfig[platform];
+          const Icon = config.icon;
+          const isSelected = isPlatformSelected(platform);
+          const selection = getPlatformSelection(platform);
+          const platformAccounts = getAccountsForPlatform(platform);
+          const hasAccounts = platformAccounts.length > 0;
 
-            return (
-              <Card
-                key={platform}
-                className={`p-4 transition-all ${
-                  isSelected
-                    ? 'border-primary bg-primary/5'
-                    : hasAccounts
-                    ? 'cursor-pointer hover:shadow-md'
-                    : 'opacity-50'
-                }`}
-                onClick={() => hasAccounts && !isSelected && togglePlatform(platform)}
-              >
+          return (
+            <Card
+              key={platform}
+              className={cn(
+                'transition-all hover-scale overflow-hidden',
+                isSelected && `border-2 ${config.glow}`,
+                hasAccounts && !isSelected && 'cursor-pointer hover:border-primary',
+                !hasAccounts && 'opacity-50'
+              )}
+              onClick={() => hasAccounts && !isSelected && togglePlatform(platform)}
+            >
+              {/* Gradient Top Border */}
+              {isSelected && (
+                <div className={`h-1 ${config.gradient}`}></div>
+              )}
+              <CardContent className="p-4">
                 <div className="space-y-4">
                   {/* Platform Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Icon className={`h-6 w-6 ${config.color}`} />
+                      <div className={cn(
+                        'w-12 h-12 rounded-full flex items-center justify-center',
+                        isSelected ? config.gradient : 'bg-muted'
+                      )}>
+                        <Icon className={cn(
+                          'h-6 w-6',
+                          isSelected ? 'text-white' : config.color
+                        )} />
+                      </div>
                       <div>
                         <h4 className="font-semibold">{config.name}</h4>
                         <p className="text-xs text-muted-foreground">
                           {hasAccounts
                             ? `${platformAccounts.length} account${
                                 platformAccounts.length > 1 ? 's' : ''
-                              } connected`
+                              } connected ✓`
                             : 'No accounts connected'}
                         </p>
                       </div>
                     </div>
                     {hasAccounts && (
                       <div
-                        className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors ${
+                        className={cn(
+                          'flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors cursor-pointer',
                           isSelected
                             ? 'border-primary bg-primary'
                             : 'border-gray-300 hover:border-primary'
-                        }`}
+                        )}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (isSelected) {
@@ -193,57 +214,59 @@ export function PlatformSelector({ selections, onSelectionChange }: PlatformSele
                   {/* Platform Configuration */}
                   {isSelected && selection && (
                     <div className="grid gap-4 md:grid-cols-2">
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor={`account-${platform}`} className="text-xs">
                           Account
                         </Label>
                         <Select
-                          id={`account-${platform}`}
                           value={selection.accountId}
-                          onChange={(e) =>
-                            updatePlatformSelection(platform, { accountId: e.target.value })
+                          onValueChange={(value) =>
+                            updatePlatformSelection(platform, { accountId: value })
                           }
-                          className="mt-1"
-                          onClick={(e) => e.stopPropagation()}
                         >
-                          {platformAccounts.map((account) => (
-                            <option key={account.id} value={account.id}>
-                              {account.username}
-                            </option>
-                          ))}
+                          <SelectTrigger id={`account-${platform}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {platformAccounts.map((account) => (
+                              <SelectItem key={account.id} value={account.id}>
+                                {account.username}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
                       </div>
 
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor={`post-type-${platform}`} className="text-xs">
                           Post Type
                         </Label>
                         <Select
-                          id={`post-type-${platform}`}
                           value={selection.postType}
-                          onChange={(e) =>
-                            updatePlatformSelection(platform, {
-                              postType: e.target.value as PostType,
-                            })
+                          onValueChange={(value) =>
+                            updatePlatformSelection(platform, { postType: value as PostType })
                           }
-                          className="mt-1"
-                          onClick={(e) => e.stopPropagation()}
                         >
-                          {config.postTypes.map((type) => (
-                            <option key={type.value} value={type.value}>
-                              {type.label}
-                            </option>
-                          ))}
+                          <SelectTrigger id={`post-type-${platform}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {config.postTypes.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
                         </Select>
                       </div>
                     </div>
                   )}
                 </div>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
 
       {/* Selected Count */}
       {selections.length > 0 && (

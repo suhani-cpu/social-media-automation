@@ -6,7 +6,13 @@ import Link from 'next/link';
 import { Upload, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { VideoCard } from '@/components/video/VideoCard';
 import { videosApi } from '@/lib/api/videos';
@@ -131,15 +137,19 @@ export default function VideosPage() {
             Status
           </Label>
           <Select
-            id="status"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as VideoStatus | 'ALL')}
+            onValueChange={(value) => setStatusFilter(value as VideoStatus | 'ALL')}
           >
-            <option value="ALL">All Status</option>
-            <option value="READY">Ready</option>
-            <option value="PROCESSING">Processing</option>
-            <option value="PENDING">Pending</option>
-            <option value="FAILED">Failed</option>
+            <SelectTrigger id="status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Status</SelectItem>
+              <SelectItem value="READY">Ready</SelectItem>
+              <SelectItem value="PROCESSING">Processing</SelectItem>
+              <SelectItem value="PENDING">Pending</SelectItem>
+              <SelectItem value="FAILED">Failed</SelectItem>
+            </SelectContent>
           </Select>
         </div>
 
@@ -148,13 +158,17 @@ export default function VideosPage() {
             Sort By
           </Label>
           <Select
-            id="sort"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'title')}
+            onValueChange={(value) => setSortBy(value as 'newest' | 'oldest' | 'title')}
           >
-            <option value="newest">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="title">Title (A-Z)</option>
+            <SelectTrigger id="sort">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+              <SelectItem value="title">Title (A-Z)</SelectItem>
+            </SelectContent>
           </Select>
         </div>
       </div>

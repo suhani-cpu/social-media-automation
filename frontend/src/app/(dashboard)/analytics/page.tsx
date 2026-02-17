@@ -6,7 +6,13 @@ import { Eye, Heart, MessageCircle, Share2, TrendingUp, Instagram, Youtube, Face
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { MetricsCard } from '@/components/analytics/MetricsCard';
 import { SimpleBarChart } from '@/components/analytics/SimpleBarChart';
@@ -115,15 +121,18 @@ export default function AnalyticsPage() {
             <div>
               <Label htmlFor="platform">Platform</Label>
               <Select
-                id="platform"
                 value={platformFilter}
-                onChange={(e) => setPlatformFilter(e.target.value as Platform | 'ALL')}
-                className="mt-2"
+                onValueChange={(value) => setPlatformFilter(value as Platform | 'ALL')}
               >
-                <option value="ALL">All Platforms</option>
-                <option value="INSTAGRAM">Instagram</option>
-                <option value="YOUTUBE">YouTube</option>
-                <option value="FACEBOOK">Facebook</option>
+                <SelectTrigger id="platform" className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Platforms</SelectItem>
+                  <SelectItem value="INSTAGRAM">Instagram</SelectItem>
+                  <SelectItem value="YOUTUBE">YouTube</SelectItem>
+                  <SelectItem value="FACEBOOK">Facebook</SelectItem>
+                </SelectContent>
               </Select>
             </div>
           </div>
@@ -219,12 +228,16 @@ export default function AnalyticsPage() {
             <CardTitle>Top Performing Posts</CardTitle>
             <Select
               value={topPostsMetric}
-              onChange={(e) => setTopPostsMetric(e.target.value as any)}
-              className="w-48"
+              onValueChange={(value) => setTopPostsMetric(value as any)}
             >
-              <option value="views">Most Views</option>
-              <option value="likes">Most Likes</option>
-              <option value="engagementRate">Best Engagement</option>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="views">Most Views</SelectItem>
+                <SelectItem value="likes">Most Likes</SelectItem>
+                <SelectItem value="engagementRate">Best Engagement</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </CardHeader>

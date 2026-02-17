@@ -18,6 +18,7 @@ const envSchema = z.object({
   INSTAGRAM_APP_SECRET: z.string().optional(),
   YOUTUBE_CLIENT_ID: z.string().optional(),
   YOUTUBE_CLIENT_SECRET: z.string().optional(),
+  YOUTUBE_REDIRECT_URI: z.string().default('http://localhost:3000/api/oauth/youtube/callback'),
   FACEBOOK_APP_ID: z.string().optional(),
   FACEBOOK_APP_SECRET: z.string().optional(),
   FRONTEND_URL: z.string().default('http://localhost:3001'),

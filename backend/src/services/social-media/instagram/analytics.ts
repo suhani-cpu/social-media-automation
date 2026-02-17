@@ -1,104 +1,185 @@
 import axios from 'axios';
-import { SocialAccount } from '@prisma/client';
 import { logger } from '../../../utils/logger';
-import { AnalyticsData } from '../../analytics/sync';
 
-const INSTAGRAM_API_BASE = 'https://graph.facebook.com/v18.0';
+const FACEBOOK_API_BASE = 'https://graph.facebook.com/v18.0';
+
+export interface InstagramAnalytics {
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  saves: number;
+  reach: number;
+  impressions: number;
+  engagement: number;
+}
 
 /**
- * Fetch analytics for an Instagram post
+ * Get Instagram media insights (analytics)
  */
-export async function fetchInstagramAnalytics(
-  account: SocialAccount,
-  postId: string
-): Promise<AnalyticsData> {
+export async function getInstagramMediaInsights(
+  mediaId: string,
+  accessToken: string
+): Promise<InstagramAnalytics> {
   try {
-    logger.debug(`Fetching Instagram analytics for post ${postId}`);
-
-    // For Instagram Business accounts, we need to use the Facebook Graph API
-    // The postId should be the Instagram media ID
-
-    const metricsToFetch = [
-      'like_count',
-      'comments_count',
-      'saved',
-      'shares', // Note: shares not available for all post types
-      'reach',
+    // Instagram Insights API metrics
+    const metrics = [
       'impressions',
-      'engagement',
+      'reach',
+      'likes',
+      'comments',
+      'shares',
+      'saves',
+      'video_views', // For Reels
     ];
 
-    const response = await axios.get(`${INSTAGRAM_API_BASE}/${postId}`, {
+    const response = await axios.get(`${FACEBOOK_API_BASE}/${mediaId}/insights`, {
       params: {
-        fields: metricsToFetch.join(','),
-        access_token: account.accessToken,
+        metric: metrics.join(','),
+        access_token: accessToken,
       },
     });
 
-    const data = response.data;
+    const data = response.data.data;
 
-    // Instagram doesn't provide shares for most content types
-    // We'll use 0 as default
-    const analytics: AnalyticsData = {
-      views: data.impressions || data.reach || 0,
-      likes: data.like_count || 0,
-      comments: data.comments_count || 0,
-      shares: data.shares || 0,
-    };
-
-    logger.info(`Instagram analytics fetched for post ${postId}`, analytics);
-
-    return analytics;
-  } catch (error: any) {
-    logger.error(`Failed to fetch Instagram analytics for post ${postId}:`, {
-      error: error.response?.data || error.message,
-    });
-
-    // Return zero metrics on error
-    return {
+    // Parse metrics from response
+    const analytics: any = {
       views: 0,
       likes: 0,
       comments: 0,
       shares: 0,
+      saves: 0,
+      reach: 0,
+      impressions: 0,
+      engagement: 0,
     };
+
+    data.forEach((metric: any) => {
+      const name = metric.name;
+      const value = metric.values[0]?.value || 0;
+
+      switch (name) {
+        case 'impressions':
+          analytics.impressions = value;
+          break;
+        case 'reach':
+          analytics.reach = value;
+          break;
+        case 'likes':
+          analytics.likes = value;
+          break;
+        case 'comments':
+          analytics.comments = value;
+          break;
+        case 'shares':
+          analytics.shares = value;
+          break;
+        case 'saves':
+          analytics.saves = value;
+          break;
+        case 'video_views':
+          analytics.views = value;
+          break;
+      }
+    });
+
+    // Calculate engagement rate
+    if (analytics.reach > 0) {
+      const totalEngagements = analytics.likes + analytics.comments + analytics.shares + analytics.saves;
+      analytics.engagement = (totalEngagements / analytics.reach) * 100;
+    }
+
+    logger.info('Instagram media insights fetched', {
+      mediaId,
+      analytics,
+    });
+
+    return analytics;
+  } catch (error) {
+    logger.error('Failed to fetch Instagram insights:', {
+      mediaId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
+    throw new Error(
+      `Failed to fetch insights: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
 /**
- * Fetch Instagram account insights
+ * Get Instagram account insights (profile analytics)
  */
-export async function fetchInstagramAccountInsights(
-  account: SocialAccount,
-  startDate: Date,
-  endDate: Date
-) {
+export async function getInstagramAccountInsights(
+  instagramAccountId: string,
+  accessToken: string,
+  period: 'day' | 'week' | 'days_28' = 'day'
+): Promise<any> {
   try {
-    logger.debug(`Fetching Instagram account insights for ${account.username}`);
+    const metrics = [
+      'impressions',
+      'reach',
+      'profile_views',
+      'follower_count',
+      'email_contacts',
+      'phone_call_clicks',
+      'text_message_clicks',
+      'get_directions_clicks',
+      'website_clicks',
+    ];
 
-    // Fetch account-level insights
-    const response = await axios.get(
-      `${INSTAGRAM_API_BASE}/${account.accountId}/insights`,
-      {
-        params: {
-          metric: [
-            'impressions',
-            'reach',
-            'profile_views',
-            'follower_count',
-          ].join(','),
-          period: 'day',
-          since: Math.floor(startDate.getTime() / 1000),
-          until: Math.floor(endDate.getTime() / 1000),
-          access_token: account.accessToken,
-        },
-      }
-    );
+    const response = await axios.get(`${FACEBOOK_API_BASE}/${instagramAccountId}/insights`, {
+      params: {
+        metric: metrics.join(','),
+        period: period,
+        access_token: accessToken,
+      },
+    });
+
+    logger.info('Instagram account insights fetched', {
+      instagramAccountId,
+      period,
+    });
 
     return response.data.data;
-  } catch (error: any) {
-    logger.error(`Failed to fetch Instagram account insights:`, {
-      error: error.response?.data || error.message,
+  } catch (error) {
+    logger.error('Failed to fetch Instagram account insights:', {
+      instagramAccountId,
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
-    return [];
+
+    throw new Error(
+      `Failed to fetch account insights: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
+}
+
+/**
+ * Get Instagram media details
+ */
+export async function getInstagramMediaDetails(
+  mediaId: string,
+  accessToken: string
+): Promise<any> {
+  try {
+    const response = await axios.get(`${FACEBOOK_API_BASE}/${mediaId}`, {
+      params: {
+        fields: 'id,caption,media_type,media_url,permalink,timestamp,like_count,comments_count',
+        access_token: accessToken,
+      },
+    });
+
+    logger.info('Instagram media details fetched', { mediaId });
+
+    return response.data;
+  } catch (error) {
+    logger.error('Failed to fetch Instagram media details:', {
+      mediaId,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+
+    throw new Error(
+      `Failed to fetch media details: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }

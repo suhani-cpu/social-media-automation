@@ -2,11 +2,10 @@
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: 'ADMIN' | 'USER';
+  name: string;
+  role?: 'ADMIN' | 'USER';
   createdAt: string;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface AuthResponse {
@@ -23,8 +22,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  name: string;
 }
 
 // Video types

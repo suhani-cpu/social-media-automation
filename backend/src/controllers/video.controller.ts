@@ -105,3 +105,60 @@ export const getVideo = async (
     next(error);
   }
 };
+
+export const deleteVideo = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    // Find video first to check ownership
+    const video = await prisma.video.findFirst({
+      where: {
+        id,
+        userId: req.user!.id,
+      },
+    });
+
+    if (!video) {
+      throw new AppError(404, 'Video not found or you do not have permission to delete it');
+    }
+
+    // Delete video files from disk if they exist
+    const filesToDelete = [
+      video.rawVideoUrl,
+      video.instagramReelUrl,
+      video.youtubeShortUrl,
+      video.youtubeVideoUrl,
+      video.facebookSquareUrl,
+      video.facebookLandscapeUrl,
+      video.thumbnailUrl,
+    ].filter((url): url is string => url !== null);
+
+    for (const filePath of filesToDelete) {
+      try {
+        await fs.unlink(filePath);
+        logger.info(`Deleted file: ${filePath}`);
+      } catch (error) {
+        logger.warn(`Failed to delete file ${filePath}: ${error}`);
+        // Continue even if file deletion fails
+      }
+    }
+
+    // Delete video record from database
+    await prisma.video.delete({
+      where: { id },
+    });
+
+    logger.info(`Video ${id} deleted by user ${req.user!.id}`);
+
+    res.json({
+      message: 'Video deleted successfully',
+      videoId: id,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

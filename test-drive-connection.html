@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Google Drive Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: linear-gradient(to right, #10b981, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f3f4f6;
+        }
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .success {
+            background: #d1fae5;
+            color: #059669;
+        }
+        pre {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Google Drive Connection Tester</h1>
+
+    <div class="status">
+        <h3>Status:</h3>
+        <div id="status">Not tested yet...</div>
+    </div>
+
+    <h3>Step 1: Test Backend Health</h3>
+    <button onclick="testHealth()">Test Backend</button>
+    <div id="health-result"></div>
+
+    <h3>Step 2: Get Auth URL (Need to login first)</h3>
+    <p>Enter your login credentials:</p>
+    <input type="email" id="email" placeholder="your@email.com" style="padding: 10px; width: 300px;">
+    <input type="password" id="password" placeholder="password" style="padding: 10px; width: 300px; margin-left: 10px;">
+    <br>
+    <button onclick="login()">Login & Get Drive Auth URL</button>
+    <div id="auth-result"></div>
+
+    <script>
+        let token = '';
+
+        async function testHealth() {
+            document.getElementById('status').innerHTML = 'Testing backend...';
+            try {
+                const response = await fetch('http://localhost:3000/health');
+                const data = await response.json();
+                document.getElementById('health-result').innerHTML = `
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                document.getElementById('status').innerHTML = '✅ Backend is running!';
+                document.getElementById('status').className = 'status success';
+            } catch (error) {
+                document.getElementById('health-result').innerHTML = `
+                    <div class="status error">❌ Error: ${error.message}</div>
+                `;
+                document.getElementById('status').innerHTML = '❌ Backend is NOT running!';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                alert('Please enter email and password');
+                return;
+            }
+
+            document.getElementById('status').innerHTML = 'Logging in...';
+
+            try {
+                // Login
+                const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const loginData = await loginResponse.json();
+
+                if (!loginResponse.ok) {
+                    throw new Error(loginData.message || 'Login failed');
+                }
+
+                token = loginData.token;
+                document.getElementById('status').innerHTML = '✅ Logged in successfully!';
+                document.getElementById('status').className = 'status success';
+
+                // Get Drive auth URL
+                const driveResponse = await fetch('http://localhost:3000/api/drive/auth', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const driveData = await driveResponse.json();
+
+                if (!driveResponse.ok) {
+                    throw new Error(driveData.message || 'Failed to get auth URL');
+                }
+
+                document.getElementById('auth-result').innerHTML = `
+                    <div class="status success">
+                        <h4>✅ Auth URL Generated!</h4>
+                        <p>Click the link below to connect your Google Drive:</p>
+                        <a href="${driveData.authUrl}" target="_blank" style="color: #3b82f6; font-size: 16px;">
+                            🔗 Connect Google Drive
+                        </a>
+                    </div>
+                `;
+
+                document.getElementById('status').innerHTML = '✅ Ready to connect! Click the link above.';
+                document.getElementById('status').className = 'status success';
+
+            } catch (error) {
+                document.getElementById('auth-result').innerHTML = `
+                    <div class="status error">
+                        <h4>❌ Error:</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                document.getElementById('status').innerHTML = '❌ Something went wrong!';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+    </script>
+</body>
+</html>

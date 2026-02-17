@@ -3,7 +3,22 @@
     "allow": [
       "Bash(test:*)",
       "Bash(xargs:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "Bash([ -d \"node_modules\" ])",
+      "Bash([ -f /Users/suhani/social-media-automation/backend/.env ])",
+      "Bash([ -f /Users/suhani/social-media-automation/frontend/.env.local ])",
+      "Bash(npm install)",
+      "Bash(pkill:*)",
+      "Bash([ -d \"/Users/suhani/social-media-automation/frontend/node_modules\" ])",
+      "Bash(bash -c \"npm install\")",
+      "Bash(docker ps:*)",
+      "Bash(chmod:*)",
+      "Bash(/Users/suhani/social-media-automation/test-full-system.sh)",
+      "Bash(node:*)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(ls:*)"
     ]
   }
 }

@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { Post, CreatePostRequest, Language, Platform, PostType } from '../types/api';
+import { Post, CreatePostRequest, Language, Platform } from '../types/api';
 
 export interface CaptionVariation {
   caption: string;

@@ -25,4 +25,28 @@ export const accountsApi = {
     const response = await apiClient.delete(`/accounts/${id}`);
     return response.data;
   },
+
+  /**
+   * Get YouTube OAuth authorization URL
+   */
+  getYouTubeAuthUrl: async (): Promise<{ authUrl: string; message: string }> => {
+    const response = await apiClient.get('/oauth/youtube/authorize');
+    return response.data;
+  },
+
+  /**
+   * Get Facebook OAuth authorization URL
+   */
+  getFacebookAuthUrl: async (): Promise<{ authUrl: string; message: string }> => {
+    const response = await apiClient.get('/oauth/facebook/authorize');
+    return response.data;
+  },
+
+  /**
+   * Get Instagram OAuth authorization URL
+   */
+  getInstagramAuthUrl: async (): Promise<{ authUrl: string; message: string }> => {
+    const response = await apiClient.get('/oauth/instagram/authorize');
+    return response.data;
+  },
 };

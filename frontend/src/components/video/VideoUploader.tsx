@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { videosApi, UploadProgress } from '@/lib/api/videos';
 import { formatFileSize } from '@/lib/utils';
 
-const MAX_FILE_SIZE = parseInt(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE || '524288000'); // 500MB
+const MAX_FILE_SIZE = parseInt(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE || '1073741824'); // 1GB (1000MB)
 const ALLOWED_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
 
 interface UploadState {

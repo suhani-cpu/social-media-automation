@@ -1,18 +1,13 @@
 'use client';
 
-import { Instagram, Youtube, Facebook, Calendar, Clock } from 'lucide-react';
+import { Instagram, Youtube, Facebook, Calendar, Clock, Video as VideoIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Video, Language, Platform, PostType } from '@/lib/types/api';
+import { Video, Language } from '@/lib/types/api';
+import { PlatformSelection } from '@/lib/types/post';
 import { formatFileSize } from '@/lib/utils';
 import { CaptionVariation } from '@/lib/api/posts';
-
-interface PlatformSelection {
-  platform: Platform;
-  accountId: string;
-  accountUsername?: string;
-  postType: PostType;
-}
+import { cn } from '@/lib/utils';
 
 interface PostReviewProps {
   video: Video;
@@ -45,8 +40,8 @@ export function PostReview({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold">Review & Confirm</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="text-lg font-semibold mb-2">Review & Confirm</h3>
+        <p className="text-sm text-muted-foreground mb-4">
           Review your post details before publishing
         </p>
       </div>
@@ -57,24 +52,29 @@ export function PostReview({
           <CardTitle className="text-base">Video</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            {video.thumbnailUrl && (
-              <div className="h-20 w-32 flex-shrink-0 overflow-hidden rounded">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0 w-24 h-24 bg-muted rounded flex items-center justify-center">
+              {video.thumbnailUrl ? (
                 <img
                   src={video.thumbnailUrl}
                   alt={video.title}
-                  className="h-full w-full object-cover"
+                  className="w-full h-full object-cover rounded"
                 />
-              </div>
-            )}
-            <div className="flex-1">
-              <h4 className="font-medium">{video.title}</h4>
-              <p className="mt-1 text-sm text-muted-foreground">
+              ) : (
+                <VideoIcon className="h-10 w-10 text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold truncate">{video.title}</h4>
+              <p className="text-sm text-muted-foreground mt-1">
                 {formatFileSize(video.size)}
+                {video.duration && ` • ${Math.round(video.duration)}s`}
               </p>
-              <Badge variant="success" className="mt-2">
-                Ready
-              </Badge>
+              <div className="mt-2">
+                <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
+                  Ready
+                </Badge>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -88,19 +88,19 @@ export function PostReview({
         <CardContent>
           <div className="space-y-3">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Language</p>
-              <p className="mt-1">{languageNames[language]}</p>
+              <p className="text-sm font-medium text-muted-foreground mb-1">Language</p>
+              <p>{languageNames[language]}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Text</p>
-              <p className="mt-1 whitespace-pre-wrap">{caption.caption}</p>
+              <p className="text-sm font-medium text-muted-foreground mb-1">Text</p>
+              <p className="whitespace-pre-wrap">{caption.caption}</p>
             </div>
             {caption.hashtags.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Hashtags</p>
-                <div className="mt-1 flex flex-wrap gap-1">
+                <p className="text-sm font-medium text-muted-foreground mb-1">Hashtags</p>
+                <div className="flex flex-wrap gap-2">
                   {caption.hashtags.map((tag, index) => (
-                    <span key={index} className="text-sm text-primary">
+                    <span key={index} className="text-sm text-primary font-medium">
                       {tag}
                     </span>
                   ))}
@@ -124,7 +124,7 @@ export function PostReview({
               return (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Icon className={`h-5 w-5 ${config.color}`} />
+                    <Icon className={cn('h-5 w-5', config.color)} />
                     <div>
                       <p className="font-medium">{config.name}</p>
                       <p className="text-xs text-muted-foreground">

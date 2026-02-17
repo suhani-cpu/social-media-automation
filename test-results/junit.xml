@@ -1,0 +1,180 @@
+<testsuites id="" name="" tests="5" failures="3" skipped="0" errors="0" time="50.648318999999994">
+<testsuite name="e2e/auth.spec.ts" timestamp="2026-02-03T06:31:22.602Z" hostname="chromium" tests="5" failures="3" skipped="0" time="46.563" errors="0">
+<testcase name="Authentication › should register a new user" classname="e2e/auth.spec.ts" time="16.462">
+<failure message="auth.spec.ts:10:7 should register a new user" type="FAILURE">
+<![CDATA[  [chromium] › e2e/auth.spec.ts:10:7 › Authentication › should register a new user ─────────────────
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/dashboard/
+    Received string:  "http://localhost:3001/register"
+    Timeout: 15000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 15000ms
+        19 × unexpected value "http://localhost:3001/register"
+
+
+      29 |
+      30 |     // Should redirect to dashboard after successful registration
+    > 31 |     await expect(page).toHaveURL(/\/dashboard/);
+         |                        ^
+      32 |
+      33 |     // Verify user menu is visible
+      34 |     await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+        at /Users/suhani/social-media-automation/tests/e2e/auth.spec.ts:31:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/video.webm]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/error-context.md]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-register-a-new-user-chromium/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication › should login with valid credentials" classname="e2e/auth.spec.ts" time="2.085">
+<system-out>
+<![CDATA[[Cleanup] User a209ed98-6319-45b8-a4b2-7a898f5cd386 marked for cleanup
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication › should show error with invalid credentials" classname="e2e/auth.spec.ts" time="16.215">
+<failure message="auth.spec.ts:58:7 should show error with invalid credentials" type="FAILURE">
+<![CDATA[  [chromium] › e2e/auth.spec.ts:58:7 › Authentication › should show error with invalid credentials ─
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('[data-testid="error-message"]')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for locator('[data-testid="error-message"]')
+        - waiting for" http://localhost:3001/login" navigation to finish...
+        - navigated to "http://localhost:3001/login"
+
+
+      67 |
+      68 |     // Should show error message
+    > 69 |     await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
+         |                                                                 ^
+      70 |     await expect(page.locator('[data-testid="error-message"]')).toContainText(/invalid credentials/i);
+      71 |   });
+      72 |
+        at /Users/suhani/social-media-automation/tests/e2e/auth.spec.ts:69:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/video.webm]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/error-context.md]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-sh-e230b-or-with-invalid-credentials-chromium/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication › should logout successfully" classname="e2e/auth.spec.ts" time="11.05">
+<failure message="auth.spec.ts:73:7 should logout successfully" type="FAILURE">
+<![CDATA[  [chromium] › e2e/auth.spec.ts:73:7 › Authentication › should logout successfully ─────────────────
+
+    TimeoutError: page.waitForURL: Timeout 10000ms exceeded.
+    =========================== logs ===========================
+    waiting for navigation to "**/dashboard**" until "load"
+      navigated to "http://localhost:3001/login"
+      navigated to "http://localhost:3001/login"
+    ============================================================
+
+       at support/helpers/auth-helper.ts:34
+
+      32 |
+      33 |     // Wait for redirect to dashboard
+    > 34 |     await this.page.waitForURL('**/dashboard**', { timeout: 10000 });
+         |                     ^
+      35 |   }
+      36 |
+      37 |   /**
+        at AuthHelper.login (/Users/suhani/social-media-automation/tests/support/helpers/auth-helper.ts:34:21)
+        at AuthHelper.loginAsTestUser (/Users/suhani/social-media-automation/tests/support/helpers/auth-helper.ts:59:5)
+        at Object.authenticatedPage (/Users/suhani/social-media-automation/tests/support/fixtures/index.ts:95:5)
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/video.webm]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/error-context.md]]
+
+[[ATTACHMENT|artifacts/e2e-auth-Authentication-should-logout-successfully-chromium/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Authentication › should protect dashboard route when not authenticated" classname="e2e/auth.spec.ts" time="0.751">
+</testcase>
+</testsuite>
+</testsuites>

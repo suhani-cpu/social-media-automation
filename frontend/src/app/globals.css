@@ -4,48 +4,87 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Vibrant Social Media Theme - Light Mode */
+    --background: 240 20% 97%; /* Light grayish-blue background */
+    --foreground: 240 10% 15%; /* Dark text for readability */
+    --card: 0 0% 100%; /* Pure white cards */
+    --card-foreground: 240 10% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 240 10% 15%;
+    --primary: 330 81% 60%; /* Instagram Pink as primary */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 95%; /* Light gray */
+    --secondary-foreground: 240 10% 15%;
+    --muted: 240 10% 95%;
+    --muted-foreground: 240 5% 45%;
+    --accent: 280 81% 60%; /* Instagram Purple */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 10% 88%; /* Soft borders */
+    --input: 240 10% 95%;
+    --ring: 330 81% 60%; /* Pink ring */
+    --radius: 0.75rem;
+
+    /* Vibrant Social Media Colors */
+    --instagram-pink: 330 81% 60%;
+    --instagram-purple: 280 81% 60%;
+    --instagram-orange: 25 100% 58%;
+    --youtube-red: 0 100% 50%;
+    --facebook-blue: 221 44% 41%;
+    --tiktok-cyan: 180 100% 42%;
+    --tiktok-pink: 340 100% 65%;
+    --twitter-blue: 203 89% 53%;
+    --linkedin-blue: 201 100% 35%;
+
+    /* Vibrant Status Colors */
+    --status-success: 142 71% 50%;
+    --status-warning: 45 93% 58%;
+    --status-error: 0 84% 55%;
+    --status-processing: 271 76% 63%;
+    --status-pending: 48 100% 58%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* Vibrant Social Media Theme - Dark Mode */
+    --background: 240 15% 8%; /* Deep dark blue-black */
+    --foreground: 240 5% 95%; /* Light text */
+    --card: 240 12% 12%; /* Dark card with subtle blue tint */
+    --card-foreground: 240 5% 95%;
+    --popover: 240 12% 12%;
+    --popover-foreground: 240 5% 95%;
+    --primary: 330 81% 65%; /* Brighter Instagram Pink for dark mode */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 18%; /* Dark gray with blue tint */
+    --secondary-foreground: 240 5% 90%;
+    --muted: 240 10% 18%;
+    --muted-foreground: 240 5% 60%;
+    --accent: 280 81% 65%; /* Brighter Instagram Purple */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 10% 20%; /* Subtle dark borders */
+    --input: 240 10% 18%;
+    --ring: 330 81% 65%; /* Bright pink ring */
+    --radius: 0.75rem;
+
+    /* Vibrant Social Media Colors - Brightened for dark mode */
+    --instagram-pink: 330 81% 65%;
+    --instagram-purple: 280 81% 65%;
+    --instagram-orange: 25 100% 62%;
+    --youtube-red: 0 100% 55%;
+    --facebook-blue: 221 44% 48%;
+    --tiktok-cyan: 180 100% 48%;
+    --tiktok-pink: 340 100% 68%;
+    --twitter-blue: 203 89% 58%;
+    --linkedin-blue: 201 100% 42%;
+
+    /* Vibrant Status Colors - Adjusted for dark mode */
+    --status-success: 142 71% 55%;
+    --status-warning: 45 93% 62%;
+    --status-error: 0 84% 60%;
+    --status-processing: 271 76% 68%;
+    --status-pending: 48 100% 62%;
   }
 }
 
@@ -54,6 +93,237 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background: linear-gradient(135deg,
+      hsl(240 20% 97%) 0%,
+      hsl(260 25% 98%) 25%,
+      hsl(280 20% 98%) 50%,
+      hsl(300 20% 97%) 75%,
+      hsl(240 20% 97%) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background: linear-gradient(135deg,
+      hsl(240 15% 8%) 0%,
+      hsl(260 18% 10%) 25%,
+      hsl(280 15% 9%) 50%,
+      hsl(300 15% 8%) 75%,
+      hsl(240 15% 8%) 100%);
+  }
+
+  /* Custom scrollbar for Vibrant Social Media theme */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(240 10% 95%);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg,
+      hsl(var(--instagram-purple)) 0%,
+      hsl(var(--instagram-pink)) 50%,
+      hsl(var(--instagram-orange)) 100%);
+    border-radius: 10px;
+    border: 2px solid hsl(240 10% 95%);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg,
+      hsl(var(--youtube-red)) 0%,
+      hsl(var(--instagram-pink)) 50%,
+      hsl(var(--tiktok-cyan)) 100%);
+    box-shadow: 0 0 10px hsla(330 81% 60% / 0.5);
+  }
+
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar-track {
+    background: hsl(240 12% 12%);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    border: 2px solid hsl(240 12% 12%);
+  }
+}
+
+@layer components {
+  /* Stage OTT Brand Gradient */
+  .stage-gradient {
+    background: linear-gradient(135deg, hsl(0 84% 55%) 0%, hsl(0 84% 45%) 100%);
+  }
+
+  /* Vibrant Social Media Gradients */
+  .instagram-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--instagram-purple)) 0%,
+      hsl(var(--instagram-pink)) 50%,
+      hsl(var(--instagram-orange)) 100%);
+  }
+
+  .youtube-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--youtube-red)) 0%,
+      hsl(0 100% 40%) 100%);
+  }
+
+  .facebook-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--facebook-blue)) 0%,
+      hsl(221 44% 30%) 100%);
+  }
+
+  .tiktok-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--tiktok-cyan)) 0%,
+      hsl(var(--tiktok-pink)) 100%);
+  }
+
+  .twitter-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--twitter-blue)) 0%,
+      hsl(203 89% 40%) 100%);
+  }
+
+  .multi-social-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--instagram-pink)) 0%,
+      hsl(var(--youtube-red)) 25%,
+      hsl(var(--tiktok-cyan)) 50%,
+      hsl(var(--facebook-blue)) 75%,
+      hsl(var(--instagram-purple)) 100%);
+  }
+
+  /* Glow effects for interactive elements */
+  .red-glow {
+    box-shadow: 0 0 20px hsla(0 84% 55% / 0.3);
+  }
+
+  .red-glow:hover {
+    box-shadow: 0 0 30px hsla(0 84% 55% / 0.5);
+  }
+
+  .instagram-glow {
+    box-shadow: 0 0 20px hsla(330 81% 60% / 0.4);
+  }
+
+  .youtube-glow {
+    box-shadow: 0 0 20px hsla(0 100% 50% / 0.4);
+  }
+
+  .facebook-glow {
+    box-shadow: 0 0 20px hsla(221 44% 41% / 0.4);
+  }
+
+  .tiktok-glow {
+    box-shadow: 0 0 20px hsla(180 100% 42% / 0.4);
+  }
+
+  .vibrant-glow {
+    box-shadow: 0 0 30px hsla(330 81% 60% / 0.3),
+                0 0 60px hsla(203 89% 53% / 0.2);
+  }
+
+  /* Animated gradient background */
+  .animated-gradient {
+    background: linear-gradient(
+      -45deg,
+      hsl(var(--instagram-pink)),
+      hsl(var(--youtube-red)),
+      hsl(var(--tiktok-cyan)),
+      hsl(var(--facebook-blue))
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Pulse animation for status badges */
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Hover scale effect */
+  .hover-scale {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-scale:hover {
+    transform: translateY(-4px) scale(1.02);
+  }
+
+  /* Social connection animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .float-animation {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .bounce-animation {
+    animation: bounce 1s ease-in-out infinite;
+  }
+
+  /* Shimmer effect for loading */
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsla(330 81% 60% / 0.2) 50%,
+      transparent 100%
+    );
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Emoji pulse */
+  @keyframes emojiPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  .emoji-pulse {
+    display: inline-block;
+    animation: emojiPulse 2s ease-in-out infinite;
+  }
+
+  /* Rainbow border animation */
+  @keyframes rainbowBorder {
+    0% { border-color: hsl(var(--instagram-pink)); }
+    25% { border-color: hsl(var(--youtube-red)); }
+    50% { border-color: hsl(var(--tiktok-cyan)); }
+    75% { border-color: hsl(var(--facebook-blue)); }
+    100% { border-color: hsl(var(--instagram-pink)); }
+  }
+
+  .rainbow-border {
+    border: 2px solid;
+    animation: rainbowBorder 4s linear infinite;
   }
 }

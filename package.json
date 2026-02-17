@@ -19,10 +19,20 @@
     "build": "npm run backend:build && npm run frontend:build",
     "lint": "npm run lint --workspaces",
     "format": "npm run format --workspaces",
-    "type-check": "npm run type-check --workspaces"
+    "type-check": "npm run type-check --workspaces",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:chrome": "playwright test --project=chromium",
+    "test:e2e:report": "playwright show-report test-results/html",
+    "test:install": "playwright install --with-deps"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "concurrently": "^8.2.2",
+    "dotenv": "^17.2.3",
     "husky": "^8.0.3",
-    "concurrently": "^8.2.2"
+    "playwright": "^1.58.0"
   }
 }

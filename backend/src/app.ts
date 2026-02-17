@@ -9,6 +9,10 @@ import { videoRoutes } from './routes/video.routes';
 import { postRoutes } from './routes/post.routes';
 import { accountRoutes } from './routes/account.routes';
 import { analyticsRoutes } from './routes/analytics.routes';
+import { clipRoutes } from './routes/clip.routes';
+import { driveRoutes } from './routes/drive.routes';
+import { sheetsRoutes } from './routes/sheets.routes';
+import { oauthRoutes } from './routes/oauth.routes';
 
 export const app = express();
 
@@ -47,6 +51,10 @@ app.use('/api/videos', videoRoutes); // Upload limiter applied per route
 app.use('/api/posts', postRoutes); // Caption limiter applied per route
 app.use('/api/accounts', accountRoutes);
 app.use('/api/analytics', analyticsLimiter, analyticsRoutes);
+app.use('/api/clip', clipRoutes); // Video cutting and editing
+app.use('/api/drive', driveRoutes); // Google Drive integration
+app.use('/api/sheets', sheetsRoutes); // Google Sheets bulk import
+app.use('/api/oauth', oauthRoutes); // YouTube and Facebook OAuth
 
 // Error handling
 app.use(errorHandler);

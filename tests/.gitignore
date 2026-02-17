@@ -1,0 +1,15 @@
+# Test Results
+test-results/
+playwright-report/
+
+# Environment files with actual credentials
+.env.test.local
+
+# Test videos (add your own)
+support/fixtures/*.mp4
+support/fixtures/*.mov
+support/fixtures/*.avi
+
+# Keep example text file
+!support/fixtures/test-file.txt
+!support/fixtures/.gitkeep

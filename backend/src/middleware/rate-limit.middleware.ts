@@ -2,6 +2,16 @@ import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
 
 /**
+ * Skip rate limiting in test environment or when explicitly disabled
+ */
+const skipRateLimiting = (): boolean => {
+  return (
+    process.env.NODE_ENV === 'test' ||
+    process.env.DISABLE_RATE_LIMIT === 'true'
+  );
+};
+
+/**
  * General API rate limiter - 100 requests per 15 minutes
  */
 export const generalLimiter = rateLimit({
@@ -10,6 +20,7 @@ export const generalLimiter = rateLimit({
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: skipRateLimiting, // Skip in test environment
   handler: (req: Request, res: Response) => {
     res.status(429).json({
       error: 'Too many requests, please try again later.',
@@ -27,6 +38,7 @@ export const authLimiter = rateLimit({
   max: 5, // Limit each IP to 5 requests per windowMs
   skipSuccessfulRequests: true, // Don't count successful requests
   message: 'Too many authentication attempts, please try again later.',
+  skip: skipRateLimiting, // Skip in test environment
   handler: (req: Request, res: Response) => {
     res.status(429).json({
       error: 'Too many authentication attempts. Please try again in 15 minutes.',
@@ -43,6 +55,7 @@ export const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // Limit each IP to 10 uploads per hour
   message: 'Upload limit exceeded, please try again later.',
+  skip: skipRateLimiting, // Skip in test environment
   handler: (req: Request, res: Response) => {
     res.status(429).json({
       error: 'Upload limit exceeded. Please try again in an hour.',
@@ -59,6 +72,7 @@ export const captionLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // Limit each IP to 20 caption generations per hour
   message: 'Caption generation limit exceeded, please try again later.',
+  skip: skipRateLimiting, // Skip in test environment
   handler: (req: Request, res: Response) => {
     res.status(429).json({
       error: 'Caption generation limit exceeded. Please try again in an hour.',
@@ -74,6 +88,7 @@ export const analyticsLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 30, // Limit each IP to 30 requests per windowMs
   message: 'Too many analytics requests, please try again later.',
+  skip: skipRateLimiting, // Skip in test environment
   handler: (req: Request, res: Response) => {
     res.status(429).json({
       error: 'Analytics request limit exceeded. Please try again later.',

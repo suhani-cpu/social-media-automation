@@ -50,6 +50,7 @@ enum Platform {
   YOUTUBE
   TWITTER
   LINKEDIN
+  GOOGLE_DRIVE
 }
 
 enum AccountStatus {

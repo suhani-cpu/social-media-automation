@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../config/database';
+import { AppError } from '../middleware/error-handler.middleware';
 import { z } from 'zod';
 
 const connectAccountSchema = z.object({
@@ -65,6 +66,39 @@ export const connectAccount = async (
         username: account.username,
         status: account.status,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const disconnectAccount = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    // Verify account belongs to user
+    const account = await prisma.socialAccount.findFirst({
+      where: {
+        id,
+        userId: req.user!.id,
+      },
+    });
+
+    if (!account) {
+      throw new AppError(404, 'Account not found');
+    }
+
+    // Delete the account
+    await prisma.socialAccount.delete({
+      where: { id },
+    });
+
+    res.json({
+      message: 'Account disconnected successfully',
     });
   } catch (error) {
     next(error);

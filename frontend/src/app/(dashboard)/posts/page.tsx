@@ -6,7 +6,13 @@ import Link from 'next/link';
 import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PostCard } from '@/components/post/PostCard';
@@ -165,14 +171,18 @@ export default function PostsPage() {
               Platform
             </Label>
             <Select
-              id="platform"
               value={platformFilter}
-              onChange={(e) => setPlatformFilter(e.target.value as Platform | 'ALL')}
+              onValueChange={(value) => setPlatformFilter(value as Platform | 'ALL')}
             >
-              <option value="ALL">All Platforms</option>
-              <option value="INSTAGRAM">Instagram</option>
-              <option value="YOUTUBE">YouTube</option>
-              <option value="FACEBOOK">Facebook</option>
+              <SelectTrigger id="platform">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Platforms</SelectItem>
+                <SelectItem value="INSTAGRAM">Instagram</SelectItem>
+                <SelectItem value="YOUTUBE">YouTube</SelectItem>
+                <SelectItem value="FACEBOOK">Facebook</SelectItem>
+              </SelectContent>
             </Select>
           </div>
 
@@ -181,13 +191,17 @@ export default function PostsPage() {
               Sort By
             </Label>
             <Select
-              id="sort"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onValueChange={(value) => setSortBy(value as 'newest' | 'oldest' | 'scheduled')}
             >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="scheduled">Scheduled Time</option>
+              <SelectTrigger id="sort">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="scheduled">Scheduled Time</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </div>
