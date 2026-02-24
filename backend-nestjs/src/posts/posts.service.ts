@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { YouTubeService, UploadProgress } from '../social-media/youtube/youtube.service';
 import { InstagramService } from '../social-media/instagram/instagram.service';
 import { FacebookService } from '../social-media/facebook/facebook.service';
+import { DriveService } from '../drive/drive.service';
 import Redis from 'ioredis';
 
 const PROGRESS_TTL = 120; // 2 minutes TTL for progress keys
@@ -22,6 +23,7 @@ export class PostsService implements OnModuleInit {
     private readonly youtubeService: YouTubeService,
     private readonly instagramService: InstagramService,
     private readonly facebookService: FacebookService,
+    private readonly driveService: DriveService,
   ) {}
 
   onModuleInit() {
@@ -198,7 +200,7 @@ export class PostsService implements OnModuleInit {
   }
 
   /**
-   * Background publish execution — downloads, converts, uploads.
+   * Background publish execution — downloads from Drive if needed, converts, uploads.
    */
   private async executePublish(
     postId: string,
@@ -206,6 +208,8 @@ export class PostsService implements OnModuleInit {
     video: any,
     account: any,
   ) {
+    let driveDownloadPath: string | null = null;
+
     try {
       let result: { id: string; permalink?: string; url?: string };
 
@@ -214,6 +218,31 @@ export class PostsService implements OnModuleInit {
       }
       if (!account) {
         throw new BadRequestException('Post has no associated social account');
+      }
+
+      // If video has no rawVideoUrl but has a Drive file ID, download from Drive first
+      const metadata = video.metadata as Record<string, any> | null;
+      if (!video.rawVideoUrl && metadata?.driveFileId) {
+        this.setProgress(postId, {
+          stage: 'downloading',
+          percent: 0,
+          message: 'Downloading from Google Drive...',
+        });
+
+        driveDownloadPath = await this.driveService.downloadToTemp(
+          post.userId,
+          metadata.driveFileId,
+          metadata.driveFileName,
+        );
+
+        // Update video with the local path so upload services can use it
+        video.rawVideoUrl = driveDownloadPath;
+
+        this.setProgress(postId, {
+          stage: 'downloading',
+          percent: 100,
+          message: 'Download complete',
+        });
       }
 
       if (post.platform === 'INSTAGRAM') {
@@ -292,6 +321,15 @@ export class PostsService implements OnModuleInit {
 
       // Progress auto-expires via Redis TTL (or clean up fallback after 60s)
       setTimeout(() => this.deleteProgress(postId), 60000);
+    } finally {
+      // Clean up Drive temp file if we downloaded one
+      if (driveDownloadPath) {
+        try {
+          const fs = await import('fs/promises');
+          await fs.unlink(driveDownloadPath);
+          this.logger.log(`Cleaned up Drive temp file: ${driveDownloadPath}`);
+        } catch { /* ignore cleanup errors */ }
+      }
     }
   }
 

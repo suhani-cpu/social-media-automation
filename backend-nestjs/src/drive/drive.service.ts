@@ -425,7 +425,9 @@ export class DriveService {
 
   /**
    * Import a single video from Google Drive into the system.
-   * Creates the video record immediately and downloads in the background.
+   * On serverless (Vercel), files are NOT downloaded at import time.
+   * Instead, the Drive file ID is stored and the file is downloaded
+   * on-demand when publishing.
    */
   async importVideo(userId: string, fileId: string, title?: string) {
     if (!fileId) {
@@ -438,67 +440,63 @@ export class DriveService {
     // Get file metadata (quick API call)
     const fileMetadata = await this.getFileMetadataFromDrive(drive, fileId);
 
-    // Create video record immediately with PENDING status
+    // Check for duplicate import (same user + same driveFileId)
+    const existing = await this.prisma.video.findFirst({
+      where: {
+        userId,
+        metadata: { path: ['driveFileId'], equals: fileId },
+      },
+    });
+    if (existing) {
+      return {
+        message: 'Video already imported from Google Drive',
+        video: existing,
+      };
+    }
+
+    // Create video record as READY — file will be downloaded on-demand at publish time
     const video = await this.prisma.video.create({
       data: {
         userId,
         title: title || fileMetadata.name,
         sourceType: 'MANUAL',
-        status: 'PENDING',
+        status: 'READY',
         fileSize: fileMetadata.size ? BigInt(fileMetadata.size) : BigInt(0),
         metadata: {
           driveFileId: fileId,
           driveFileName: fileMetadata.name,
+          driveMimeType: fileMetadata.mimeType,
           importedAt: new Date().toISOString(),
         },
       },
     });
 
-    this.logger.log(`Video record created from Google Drive: ${video.id}, starting background download...`);
-
-    // Download in background (don't await)
-    this.downloadInBackground(drive, fileId, fileMetadata.name, video.id);
+    this.logger.log(`Video imported from Google Drive: ${video.id} (${fileMetadata.name})`);
 
     return {
-      message: 'Video import started from Google Drive',
+      message: 'Video imported from Google Drive',
       video,
     };
   }
 
   /**
-   * Background download helper - downloads the file and updates the video record.
+   * Download a Drive file to a temp path on-demand (used at publish time).
+   * Returns the local temp file path.
    */
-  private async downloadInBackground(
-    drive: drive_v3.Drive,
-    fileId: string,
-    fileName: string,
-    videoId: string,
-  ) {
-    try {
-      const tempDir = '/tmp/drive-imports';
-      await fs.mkdir(tempDir, { recursive: true });
-      const tempFilePath = path.join(tempDir, `${Date.now()}-${fileName}`);
+  async downloadToTemp(userId: string, driveFileId: string, fileName?: string): Promise<string> {
+    const auth = await this.getAuthenticatedClient(userId);
+    const drive = this.getDriveClient(auth);
 
-      await this.downloadFile(drive, fileId, tempFilePath);
-      const stats = await fs.stat(tempFilePath);
+    const tempDir = '/tmp/drive-imports';
+    await fs.mkdir(tempDir, { recursive: true });
+    const safeName = fileName || `drive-${driveFileId}`;
+    const tempFilePath = path.join(tempDir, `${Date.now()}-${safeName}`);
 
-      await this.prisma.video.update({
-        where: { id: videoId },
-        data: {
-          rawVideoUrl: tempFilePath,
-          fileSize: BigInt(stats.size),
-          status: 'READY',
-        },
-      });
+    this.logger.log(`Downloading Drive file ${driveFileId} to ${tempFilePath}`);
+    await this.downloadFile(drive, driveFileId, tempFilePath);
+    this.logger.log(`Drive file downloaded: ${tempFilePath}`);
 
-      this.logger.log(`Background download complete for video ${videoId}`);
-    } catch (error: any) {
-      this.logger.error(`Background download failed for video ${videoId}: ${error.message}`);
-      await this.prisma.video.update({
-        where: { id: videoId },
-        data: { status: 'FAILED' },
-      }).catch(() => {});
-    }
+    return tempFilePath;
   }
 
   /**
@@ -530,24 +528,22 @@ export class DriveService {
       try {
         const fileMetadata = await this.getFileMetadataFromDrive(drive, fileId);
 
-        // Create video record immediately
+        // Create video record as READY (download on-demand at publish time)
         const video = await this.prisma.video.create({
           data: {
             userId,
             title: fileMetadata.name,
             sourceType: 'MANUAL',
-            status: 'PENDING',
+            status: 'READY',
             fileSize: fileMetadata.size ? BigInt(fileMetadata.size) : BigInt(0),
             metadata: {
               driveFileId: fileId,
               driveFileName: fileMetadata.name,
+              driveMimeType: fileMetadata.mimeType,
               importedAt: new Date().toISOString(),
             },
           },
         });
-
-        // Start background download (don't await)
-        this.downloadInBackground(drive, fileId, fileMetadata.name, video.id);
 
         results.push({
           success: true,
