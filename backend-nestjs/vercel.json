@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "installCommand": "npm install && npx prisma generate",
   "builds": [
     {
       "src": "dist/main.js",
@@ -11,5 +12,10 @@
       "src": "/(.*)",
       "dest": "dist/main.js"
     }
-  ]
+  ],
+  "functions": {
+    "dist/main.js": {
+      "maxDuration": 30
+    }
+  }
 }
