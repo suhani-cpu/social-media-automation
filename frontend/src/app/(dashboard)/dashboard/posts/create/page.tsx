@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
@@ -11,7 +11,7 @@ import { CaptionGenerator } from '@/components/post/CaptionGenerator';
 import { PlatformSelector } from '@/components/post/PlatformSelector';
 import { ScheduleSelector } from '@/components/post/ScheduleSelector';
 import { PostReview } from '@/components/post/PostReview';
-import { postsApi, CaptionVariation } from '@/lib/api/posts';
+import { postsApi, CaptionVariation, authApi } from '@/lib/api/posts';
 import { Video, Language, Platform, PostType } from '@/lib/types/api';
 
 interface PlatformSelection {
@@ -34,18 +34,31 @@ export default function CreatePostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Step 1: Video
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-
-  // Step 2: Caption
   const [language, setLanguage] = useState<Language>('ENGLISH');
   const [selectedCaption, setSelectedCaption] = useState<CaptionVariation | null>(null);
-
-  // Step 3: Platforms
   const [platformSelections, setPlatformSelections] = useState<PlatformSelection[]>([]);
-
-  // Step 4: Schedule
   const [scheduledFor, setScheduledFor] = useState<string | null>(null);
+  const [privacyStatus, setPrivacyStatus] = useState<string>('public');
+
+  // Load user defaults from onboarding/profile
+  useEffect(() => {
+    authApi
+      .getMe()
+      .then((user) => {
+        if (user.defaultLanguage) {
+          setLanguage(user.defaultLanguage as Language);
+        }
+        if (user.defaultPrivacy) {
+          setPrivacyStatus(user.defaultPrivacy);
+        }
+      })
+      .catch(() => {
+        /* ignore — use defaults */
+      });
+  }, []);
+
+  const hasYouTube = platformSelections.some((s) => s.platform === 'YOUTUBE');
 
   const canProceed = () => {
     switch (currentStep) {
@@ -56,9 +69,9 @@ export default function CreatePostPage() {
       case 2:
         return platformSelections.length > 0;
       case 3:
-        return true; // Schedule can be now or later
+        return true;
       case 4:
-        return true; // Review step
+        return true;
       default:
         return false;
     }
@@ -88,7 +101,6 @@ export default function CreatePostPage() {
     setError(null);
 
     try {
-      // Create posts for each platform
       const promises = platformSelections.map((selection) =>
         postsApi.create({
           videoId: selectedVideo.id,
@@ -99,12 +111,11 @@ export default function CreatePostPage() {
           platform: selection.platform,
           postType: selection.postType,
           scheduledFor: scheduledFor || undefined,
+          metadata: selection.platform === 'YOUTUBE' ? { privacyStatus } : undefined,
         })
       );
 
       await Promise.all(promises);
-
-      // Redirect to posts page
       router.push('/dashboard/posts');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create posts. Please try again.');
@@ -117,23 +128,32 @@ export default function CreatePostPage() {
       {/* Header */}
       <div className="flex items-center gap-2">
         <Link href="/dashboard/posts">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-white">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold">Create Post</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold text-white">Create Post</h1>
+          <p className="text-sm text-neutral-500">
             Create and schedule posts across multiple platforms
           </p>
         </div>
       </div>
 
       {/* Stepper */}
-      <Stepper steps={steps} currentStep={currentStep} />
+      <Stepper
+        steps={steps}
+        currentStep={currentStep}
+        onStepClick={(index) => {
+          if (index < currentStep) {
+            setCurrentStep(index);
+            setError(null);
+          }
+        }}
+      />
 
       {/* Step Content */}
-      <div className="rounded-lg border bg-card p-6">
+      <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-6">
         {currentStep === 0 && (
           <VideoSelector selectedVideo={selectedVideo} onSelect={setSelectedVideo} />
         )}
@@ -157,7 +177,13 @@ export default function CreatePostPage() {
         )}
 
         {currentStep === 3 && (
-          <ScheduleSelector scheduledFor={scheduledFor} onScheduleChange={setScheduledFor} />
+          <ScheduleSelector
+            scheduledFor={scheduledFor}
+            onScheduleChange={setScheduledFor}
+            privacyStatus={privacyStatus}
+            onPrivacyChange={setPrivacyStatus}
+            hasYouTube={hasYouTube}
+          />
         )}
 
         {currentStep === 4 && selectedVideo && selectedCaption && (
@@ -167,13 +193,14 @@ export default function CreatePostPage() {
             language={language}
             platforms={platformSelections}
             scheduledFor={scheduledFor}
+            onCaptionEdit={setSelectedCaption}
           />
         )}
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
           {error}
         </div>
       )}
@@ -184,6 +211,7 @@ export default function CreatePostPage() {
           variant="outline"
           onClick={handleBack}
           disabled={currentStep === 0 || isSubmitting}
+          className="border-[#1a1a1a] text-neutral-300 hover:bg-[#1a1a1a]"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
@@ -191,18 +219,30 @@ export default function CreatePostPage() {
 
         <div className="flex gap-2">
           <Link href="/dashboard/posts">
-            <Button variant="ghost" disabled={isSubmitting}>
+            <Button
+              variant="ghost"
+              disabled={isSubmitting}
+              className="text-neutral-400 hover:text-white"
+            >
               Cancel
             </Button>
           </Link>
 
           {currentStep < steps.length - 1 ? (
-            <Button onClick={handleNext} disabled={!canProceed() || isSubmitting}>
+            <Button
+              onClick={handleNext}
+              disabled={!canProceed() || isSubmitting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
               Next
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={!canProceed() || isSubmitting}>
+            <Button
+              onClick={handleSubmit}
+              disabled={!canProceed() || isSubmitting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
               {isSubmitting ? (
                 'Creating...'
               ) : (
@@ -217,7 +257,7 @@ export default function CreatePostPage() {
       </div>
 
       {/* Progress Indicator */}
-      <div className="text-center text-sm text-muted-foreground">
+      <div className="text-center text-xs text-neutral-500">
         Step {currentStep + 1} of {steps.length}
       </div>
     </div>

@@ -49,4 +49,12 @@ export const accountsApi = {
     const response = await apiClient.get('/oauth/instagram/authorize');
     return response.data;
   },
+
+  /**
+   * Get Google Drive OAuth authorization URL
+   */
+  getDriveAuthUrl: async (): Promise<{ authUrl: string; message: string }> => {
+    const response = await apiClient.get('/drive/auth');
+    return response.data;
+  },
 };

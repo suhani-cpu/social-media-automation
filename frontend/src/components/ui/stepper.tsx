@@ -12,9 +12,10 @@ interface Step {
 interface StepperProps {
   steps: Step[];
   currentStep: number;
+  onStepClick?: (stepIndex: number) => void;
 }
 
-export function Stepper({ steps, currentStep }: StepperProps) {
+export function Stepper({ steps, currentStep, onStepClick }: StepperProps) {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
@@ -26,20 +27,21 @@ export function Stepper({ steps, currentStep }: StepperProps) {
           return (
             <div key={step.id} className="flex flex-1 items-center">
               {/* Step Circle */}
-              <div className="flex flex-col items-center">
+              <div
+                className="flex flex-col items-center"
+                onClick={() => isCompleted && onStepClick?.(index)}
+                style={{ cursor: isCompleted ? 'pointer' : 'default' }}
+              >
                 <div
                   className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold',
-                    isCompleted && 'border-primary bg-primary text-primary-foreground',
+                    'flex h-10 w-10 items-center justify-center rounded-full border-2 font-semibold transition-all',
+                    isCompleted &&
+                      'border-primary bg-primary text-primary-foreground hover:opacity-80',
                     isCurrent && 'border-primary bg-primary text-primary-foreground',
                     isUpcoming && 'border-muted bg-background text-muted-foreground'
                   )}
                 >
-                  {isCompleted ? (
-                    <Check className="h-5 w-5" />
-                  ) : (
-                    <span>{step.id}</span>
-                  )}
+                  {isCompleted ? <Check className="h-5 w-5" /> : <span>{step.id}</span>}
                 </div>
 
                 {/* Step Labels */}
@@ -61,10 +63,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
               {index < steps.length - 1 && (
                 <div className="flex-1 px-2 pb-8">
                   <div
-                    className={cn(
-                      'h-0.5 w-full',
-                      index < currentStep ? 'bg-primary' : 'bg-muted'
-                    )}
+                    className={cn('h-0.5 w-full', index < currentStep ? 'bg-primary' : 'bg-muted')}
                   />
                 </div>
               )}

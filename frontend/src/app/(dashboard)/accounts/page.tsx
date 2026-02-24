@@ -16,12 +16,14 @@ const platformIcons: PlatformIcon = {
   INSTAGRAM: '📷',
   YOUTUBE: '▶️',
   FACEBOOK: '👥',
+  GOOGLE_DRIVE: '📁',
 };
 
 const platformColors: PlatformIcon = {
   INSTAGRAM: 'bg-pink-500',
   YOUTUBE: 'bg-red-500',
   FACEBOOK: 'bg-blue-500',
+  GOOGLE_DRIVE: 'bg-green-500',
 };
 
 export default function AccountsPage() {
@@ -37,8 +39,14 @@ export default function AccountsPage() {
     const success = searchParams.get('success');
     const error = searchParams.get('error');
     const pages = searchParams.get('pages');
+    const drive = searchParams.get('drive');
 
-    if (success === 'youtube_connected') {
+    if (drive === 'connected') {
+      setMessage({ type: 'success', text: 'Google Drive connected successfully!' });
+      loadAccounts();
+    } else if (drive === 'error') {
+      setMessage({ type: 'error', text: 'Failed to connect Google Drive. Please try again.' });
+    } else if (success === 'youtube_connected') {
       setMessage({ type: 'success', text: 'YouTube channel connected successfully!' });
       loadAccounts();
     } else if (success === 'facebook_connected') {
@@ -47,8 +55,13 @@ export default function AccountsPage() {
       loadAccounts();
     } else if (success === 'instagram_connected') {
       const accountCount = searchParams.get('accounts');
-      const accountText = accountCount ? ` (${accountCount} account${accountCount !== '1' ? 's' : ''})` : '';
-      setMessage({ type: 'success', text: `Instagram accounts connected successfully${accountText}!` });
+      const accountText = accountCount
+        ? ` (${accountCount} account${accountCount !== '1' ? 's' : ''})`
+        : '';
+      setMessage({
+        type: 'success',
+        text: `Instagram accounts connected successfully${accountText}!`,
+      });
       loadAccounts();
     } else if (error) {
       const errorMessages: { [key: string]: string } = {
@@ -59,13 +72,14 @@ export default function AccountsPage() {
         no_facebook_pages: 'No Facebook pages found. Please create a page first.',
         instagram_auth_failed: 'Instagram authorization failed. Please try again.',
         instagram_connection_failed: 'Failed to connect Instagram accounts.',
-        no_instagram_accounts: 'No Instagram Business accounts found. Please link a Business account to your Facebook Page.',
+        no_instagram_accounts:
+          'No Instagram Business accounts found. Please link a Business account to your Facebook Page.',
       };
       setMessage({ type: 'error', text: errorMessages[error] || 'Connection failed.' });
     }
 
     // Clear URL parameters after showing message
-    if (success || error) {
+    if (success || error || drive) {
       router.replace('/dashboard/accounts', { scroll: false });
     }
   }, [searchParams, router]);
@@ -87,26 +101,31 @@ export default function AccountsPage() {
   }, []);
 
   const handleConnectYouTube = async () => {
+    console.log('[YT] handleConnectYouTube called');
+    setConnecting('YOUTUBE');
     try {
-      // Check if token exists before making API call
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setMessage({ type: 'error', text: 'Please login again to connect YouTube. Your session may have expired.' });
+      console.log('[YT] Calling accountsApi.getYouTubeAuthUrl()...');
+      const response = await accountsApi.getYouTubeAuthUrl();
+      console.log('[YT] API response:', JSON.stringify(response));
+      const authUrl = response?.authUrl;
+
+      if (!authUrl) {
+        console.error('[YT] No authUrl in response');
+        setMessage({ type: 'error', text: 'No authorization URL received from server.' });
+        setConnecting(null);
         return;
       }
 
-      setConnecting('YOUTUBE');
-      console.log('Requesting YouTube auth URL...');
-      const { authUrl } = await accountsApi.getYouTubeAuthUrl();
-      console.log('Auth URL received:', authUrl);
-      // Open in same window to handle OAuth flow
+      console.log('[YT] Redirecting to:', authUrl.substring(0, 80) + '...');
       window.location.href = authUrl;
     } catch (error: any) {
-      console.error('Failed to get YouTube auth URL:', error);
-      const errorMessage = error.response?.status === 401
-        ? 'Session expired. Please login again.'
-        : 'Failed to connect YouTube. Please try again.';
-      setMessage({ type: 'error', text: errorMessage });
+      console.error('[YT] Error:', error?.response?.status, error?.message);
+      const msg =
+        error.response?.status === 401
+          ? 'Session expired. Please log out and log back in.'
+          : `YouTube connect failed: ${error?.response?.data?.message || error.message}`;
+      alert(msg);
+      setMessage({ type: 'error', text: msg });
       setConnecting(null);
     }
   };
@@ -133,6 +152,18 @@ export default function AccountsPage() {
     } catch (error) {
       console.error('Failed to get Instagram auth URL:', error);
       setMessage({ type: 'error', text: 'Failed to connect Instagram' });
+      setConnecting(null);
+    }
+  };
+
+  const handleConnectDrive = async () => {
+    try {
+      setConnecting('GOOGLE_DRIVE');
+      const { authUrl } = await accountsApi.getDriveAuthUrl();
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('Failed to get Google Drive auth URL:', error);
+      setMessage({ type: 'error', text: 'Failed to connect Google Drive. Please try again.' });
       setConnecting(null);
     }
   };
@@ -164,17 +195,21 @@ export default function AccountsPage() {
     return <Badge className={config.className}>{config.label}</Badge>;
   };
 
-  const groupedAccounts = accounts.reduce((acc, account) => {
-    if (!acc[account.platform]) {
-      acc[account.platform] = [];
-    }
-    acc[account.platform].push(account);
-    return acc;
-  }, {} as { [key: string]: SocialAccount[] });
+  const groupedAccounts = accounts.reduce(
+    (acc, account) => {
+      if (!acc[account.platform]) {
+        acc[account.platform] = [];
+      }
+      acc[account.platform].push(account);
+      return acc;
+    },
+    {} as { [key: string]: SocialAccount[] }
+  );
 
   const hasYouTube = accounts.some((a) => a.platform === 'YOUTUBE');
   const hasFacebook = accounts.some((a) => a.platform === 'FACEBOOK');
   const hasInstagram = accounts.some((a) => a.platform === 'INSTAGRAM');
+  const hasDrive = accounts.some((a) => a.platform === 'GOOGLE_DRIVE');
 
   return (
     <div className="space-y-6">
@@ -204,7 +239,7 @@ export default function AccountsPage() {
       )}
 
       {/* Connection Buttons */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         {/* YouTube */}
         <Card className="p-6">
           <div className="flex items-center space-x-3 mb-4">
@@ -218,14 +253,14 @@ export default function AccountsPage() {
           </div>
           <Button
             onClick={handleConnectYouTube}
-            disabled={connecting === 'YOUTUBE' || loading}
+            disabled={connecting === 'YOUTUBE'}
             className="w-full bg-red-500 hover:bg-red-600"
           >
             {connecting === 'YOUTUBE'
               ? 'Connecting...'
               : hasYouTube
-              ? 'Reconnect YouTube'
-              : 'Connect YouTube'}
+                ? 'Reconnect YouTube'
+                : 'Connect YouTube'}
           </Button>
         </Card>
 
@@ -242,14 +277,14 @@ export default function AccountsPage() {
           </div>
           <Button
             onClick={handleConnectFacebook}
-            disabled={connecting === 'FACEBOOK' || loading}
+            disabled={connecting === 'FACEBOOK'}
             className="w-full bg-blue-500 hover:bg-blue-600"
           >
             {connecting === 'FACEBOOK'
               ? 'Connecting...'
               : hasFacebook
-              ? 'Reconnect Facebook'
-              : 'Connect Facebook'}
+                ? 'Reconnect Facebook'
+                : 'Connect Facebook'}
           </Button>
         </Card>
 
@@ -266,14 +301,38 @@ export default function AccountsPage() {
           </div>
           <Button
             onClick={handleConnectInstagram}
-            disabled={connecting === 'INSTAGRAM' || loading}
+            disabled={connecting === 'INSTAGRAM'}
             className="w-full bg-pink-500 hover:bg-pink-600"
           >
             {connecting === 'INSTAGRAM'
               ? 'Connecting...'
               : hasInstagram
-              ? 'Reconnect Instagram'
-              : 'Connect Instagram'}
+                ? 'Reconnect Instagram'
+                : 'Connect Instagram'}
+          </Button>
+        </Card>
+
+        {/* Google Drive */}
+        <Card className="p-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <div className="text-4xl">{platformIcons.GOOGLE_DRIVE}</div>
+            <div>
+              <h3 className="font-semibold">Google Drive</h3>
+              <p className="text-sm text-muted-foreground">
+                {hasDrive ? 'Connected' : 'Not connected'}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={handleConnectDrive}
+            disabled={connecting === 'GOOGLE_DRIVE'}
+            className="w-full bg-green-500 hover:bg-green-600"
+          >
+            {connecting === 'GOOGLE_DRIVE'
+              ? 'Connecting...'
+              : hasDrive
+                ? 'Reconnect Drive'
+                : 'Connect Google Drive'}
           </Button>
         </Card>
       </div>
@@ -308,9 +367,7 @@ export default function AccountsPage() {
                         <div className={`w-2 h-2 rounded-full ${platformColors[platform]}`} />
                         <div>
                           <p className="font-medium">{account.username}</p>
-                          <p className="text-sm text-muted-foreground">
-                            ID: {account.accountId}
-                          </p>
+                          <p className="text-sm text-muted-foreground">ID: {account.accountId}</p>
                           {account.tokenExpiry && (
                             <p className="text-xs text-muted-foreground">
                               Expires: {new Date(account.tokenExpiry).toLocaleDateString()}
@@ -355,12 +412,8 @@ export default function AccountsPage() {
             <strong>Instagram:</strong> Click "Connect Instagram" (requires Instagram Business
             account linked to Facebook Page)
           </li>
-          <li>
-            Tokens are automatically refreshed to keep your connections active
-          </li>
-          <li>
-            You can reconnect an account anytime to refresh permissions
-          </li>
+          <li>Tokens are automatically refreshed to keep your connections active</li>
+          <li>You can reconnect an account anytime to refresh permissions</li>
         </ul>
       </Card>
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Rocket, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,8 +24,11 @@ interface AutoPostResult {
 }
 
 export function AutoPostModal({ isOpen, onClose, onSuccess }: AutoPostModalProps) {
+  const router = useRouter();
   const { success, error } = useToast();
-  const [sheetUrl, setSheetUrl] = useState('https://docs.google.com/spreadsheets/d/1eJFuzi-9EvqchOQ3H6cbgIUO6XEJQX4kxQZZwazg7qw/edit?usp=sharing');
+  const [sheetUrl, setSheetUrl] = useState(
+    'https://docs.google.com/spreadsheets/d/1eJFuzi-9EvqchOQ3H6cbgIUO6XEJQX4kxQZZwazg7qw/edit?usp=sharing'
+  );
   const [isProcessing, setIsProcessing] = useState(false);
   const [results, setResults] = useState<AutoPostResult[]>([]);
   const [step, setStep] = useState<'input' | 'processing' | 'results'>('input');
@@ -39,12 +43,12 @@ export function AutoPostModal({ isOpen, onClose, onSuccess }: AutoPostModalProps
     setStep('processing');
 
     try {
-      const response = await apiClient.post('/sheets/import', { sheetUrl });
+      const response = await apiClient.post('/sheets/import', { sheetUrl }, { timeout: 300000 });
 
       setResults(response.data.results);
       setStep('results');
 
-      const { succeeded, failed } = response.data.summary;
+      const { succeeded, failed: _failed } = response.data.summary;
       const published = response.data.results.filter(
         (r: AutoPostResult) => r.publishStatus === 'published'
       ).length;
@@ -74,10 +78,16 @@ export function AutoPostModal({ isOpen, onClose, onSuccess }: AutoPostModalProps
   };
 
   const handleClose = () => {
-    setSheetUrl('https://docs.google.com/spreadsheets/d/1eJFuzi-9EvqchOQ3H6cbgIUO6XEJQX4kxQZZwazg7qw/edit?usp=sharing');
+    const hadResults = results.length > 0;
+    setSheetUrl(
+      'https://docs.google.com/spreadsheets/d/1eJFuzi-9EvqchOQ3H6cbgIUO6XEJQX4kxQZZwazg7qw/edit?usp=sharing'
+    );
     setResults([]);
     setStep('input');
     onClose();
+    if (hadResults) {
+      router.push('/dashboard/posts?sort=newest');
+    }
   };
 
   if (!isOpen) return null;
@@ -121,9 +131,7 @@ export function AutoPostModal({ isOpen, onClose, onSuccess }: AutoPostModalProps
           {step === 'input' && (
             <div className="space-y-6">
               <div>
-                <label className="block text-lg font-semibold mb-3">
-                  📊 Google Sheets URL:
-                </label>
+                <label className="block text-lg font-semibold mb-3">📊 Google Sheets URL:</label>
                 <input
                   type="url"
                   value={sheetUrl}
@@ -167,8 +175,8 @@ export function AutoPostModal({ isOpen, onClose, onSuccess }: AutoPostModalProps
 
               <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  ⚠️ <strong>Important:</strong> Instagram account must be connected first.
-                  If not connected, go to Accounts page and connect it.
+                  ⚠️ <strong>Important:</strong> Instagram account must be connected first. If not
+                  connected, go to Accounts page and connect it.
                 </p>
               </div>
 

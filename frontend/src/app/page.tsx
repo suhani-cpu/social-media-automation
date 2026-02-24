@@ -2,23 +2,25 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store/authStore';
 
 export default function HomePage() {
   const router = useRouter();
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/dashboard');
+    const token = localStorage.getItem('token');
+    if (token) {
+      router.replace('/dashboard');
     } else {
-      router.push('/login');
+      router.replace('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Redirecting...</p>
+      <div className="text-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
+        <p className="mt-4 text-sm text-muted-foreground">Loading...</p>
+      </div>
     </div>
   );
 }

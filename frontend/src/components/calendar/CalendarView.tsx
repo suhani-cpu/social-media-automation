@@ -11,10 +11,10 @@ interface CalendarViewProps {
   onPostClick?: (post: Post) => void;
 }
 
-const platformConfig = {
-  INSTAGRAM: { icon: Instagram, color: 'bg-pink-100 text-pink-700 border-pink-300' },
-  YOUTUBE: { icon: Youtube, color: 'bg-red-100 text-red-700 border-red-300' },
-  FACEBOOK: { icon: Facebook, color: 'bg-blue-100 text-blue-700 border-blue-300' },
+const platformConfig: Record<string, any> = {
+  INSTAGRAM: { icon: Instagram, color: 'bg-red-500/10 text-red-400 border-red-500/20' },
+  YOUTUBE: { icon: Youtube, color: 'bg-red-500/10 text-red-400 border-red-500/20' },
+  FACEBOOK: { icon: Facebook, color: 'bg-red-500/10 text-red-400 border-red-500/20' },
 };
 
 export function CalendarView({ posts, onPostClick }: CalendarViewProps) {
@@ -61,17 +61,9 @@ export function CalendarView({ posts, onPostClick }: CalendarViewProps) {
     });
   };
 
-  const previousMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
-
-  const goToToday = () => {
-    setCurrentDate(new Date());
-  };
+  const previousMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const goToToday = () => setCurrentDate(new Date());
 
   const isToday = (date: Date) => {
     const today = new Date();
@@ -91,30 +83,45 @@ export function CalendarView({ posts, onPostClick }: CalendarViewProps) {
   }
 
   return (
-    <div className="rounded-lg border bg-card p-6">
+    <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-6">
       {/* Calendar Header */}
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
+        <h2 className="text-lg font-semibold text-white">
           {monthNames[month]} {year}
         </h2>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={goToToday}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={goToToday}
+            className="border-[#1a1a1a] text-neutral-300 hover:bg-[#1a1a1a] text-xs"
+          >
             Today
           </Button>
-          <Button variant="outline" size="icon" onClick={previousMonth}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={previousMonth}
+            className="border-[#1a1a1a] text-neutral-300 hover:bg-[#1a1a1a] h-8 w-8"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={nextMonth}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={nextMonth}
+            className="border-[#1a1a1a] text-neutral-300 hover:bg-[#1a1a1a] h-8 w-8"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1.5">
         {/* Day Names */}
         {dayNames.map((day) => (
-          <div key={day} className="p-2 text-center text-sm font-semibold text-muted-foreground">
+          <div key={day} className="p-2 text-center text-xs font-medium text-neutral-500">
             {day}
           </div>
         ))}
@@ -132,20 +139,18 @@ export function CalendarView({ posts, onPostClick }: CalendarViewProps) {
           return (
             <div
               key={day}
-              className={`min-h-24 rounded-lg border p-2 transition-colors hover:bg-accent ${
-                today ? 'border-primary bg-primary/5' : ''
+              className={`min-h-24 rounded-md border p-2 transition-colors hover:bg-[#1a1a1a]/50 ${
+                today ? 'border-red-600/50 bg-red-600/5' : 'border-[#1a1a1a]'
               }`}
             >
               <div className="mb-2 flex items-center justify-between">
                 <span
-                  className={`text-sm font-medium ${
-                    today ? 'text-primary' : 'text-foreground'
-                  }`}
+                  className={`text-xs font-medium ${today ? 'text-red-500' : 'text-neutral-400'}`}
                 >
                   {day}
                 </span>
                 {postsOnDate.length > 0 && (
-                  <Badge variant="outline" className="h-5 text-xs">
+                  <Badge variant="outline" className="h-4 text-[10px] px-1.5 border-[#1a1a1a]">
                     {postsOnDate.length}
                   </Badge>
                 )}
@@ -154,8 +159,8 @@ export function CalendarView({ posts, onPostClick }: CalendarViewProps) {
               {/* Posts */}
               <div className="space-y-1">
                 {postsOnDate.slice(0, 3).map((post) => {
-                  const config = platformConfig[post.platform];
-                  const Icon = config.icon;
+                  const pConfig = platformConfig[post.platform];
+                  const PIcon = pConfig.icon;
                   const time = post.scheduledFor
                     ? new Date(post.scheduledFor).toLocaleTimeString('en-US', {
                         hour: '2-digit',
@@ -166,22 +171,19 @@ export function CalendarView({ posts, onPostClick }: CalendarViewProps) {
                   return (
                     <div
                       key={post.id}
-                      className={`cursor-pointer rounded border p-1 text-xs transition-colors hover:shadow-sm ${config.color}`}
+                      className={`cursor-pointer rounded border p-1 text-[10px] transition-colors hover:bg-[#1a1a1a] ${pConfig.color}`}
                       onClick={() => onPostClick?.(post)}
                     >
                       <div className="flex items-center gap-1">
-                        <Icon className="h-3 w-3 flex-shrink-0" />
+                        <PIcon className="h-2.5 w-2.5 flex-shrink-0" />
                         <span className="truncate font-medium">{time}</span>
                       </div>
-                      <p className="line-clamp-1 mt-0.5">{post.caption}</p>
                     </div>
                   );
                 })}
 
                 {postsOnDate.length > 3 && (
-                  <div className="text-xs text-muted-foreground">
-                    +{postsOnDate.length - 3} more
-                  </div>
+                  <div className="text-[10px] text-neutral-500">+{postsOnDate.length - 3} more</div>
                 )}
               </div>
             </div>
@@ -190,17 +192,15 @@ export function CalendarView({ posts, onPostClick }: CalendarViewProps) {
       </div>
 
       {/* Legend */}
-      <div className="mt-6 flex flex-wrap items-center gap-4 border-t pt-4 text-sm">
-        <span className="font-medium">Legend:</span>
+      <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-[#1a1a1a] pt-4 text-xs">
+        <span className="font-medium text-neutral-400">Legend:</span>
         {(Object.keys(platformConfig) as Platform[]).map((platform) => {
-          const config = platformConfig[platform];
-          const Icon = config.icon;
+          const pConfig = platformConfig[platform];
+          const PIcon = pConfig.icon;
           return (
-            <div key={platform} className="flex items-center gap-2">
-              <div className={`rounded border p-1 ${config.color}`}>
-                <Icon className="h-3 w-3" />
-              </div>
-              <span className="capitalize">{platform.toLowerCase()}</span>
+            <div key={platform} className="flex items-center gap-1.5">
+              <PIcon className="h-3 w-3 text-red-500" />
+              <span className="capitalize text-neutral-500">{platform.toLowerCase()}</span>
             </div>
           );
         })}

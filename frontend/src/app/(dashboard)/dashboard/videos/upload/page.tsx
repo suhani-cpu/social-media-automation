@@ -9,18 +9,16 @@ export default function VideoUploadPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Link href="/dashboard/videos">
+          <Button variant="ghost" size="icon" className="text-neutral-400 hover:text-white">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Link href="/dashboard/videos">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <h1 className="text-3xl font-bold">Upload Video</h1>
-          </div>
-          <p className="text-muted-foreground">
-            Upload a video to process and share across your social media platforms
+          <h1 className="text-2xl font-bold text-white">Upload Video</h1>
+          <p className="text-sm text-neutral-500">
+            Upload a video to process and share across platforms
           </p>
         </div>
       </div>
@@ -29,30 +27,27 @@ export default function VideoUploadPage() {
       <VideoUploader />
 
       {/* Info */}
-      <div className="rounded-lg border bg-card p-4">
-        <h3 className="font-semibold mb-2">What happens after upload?</h3>
-        <ul className="space-y-2 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+        <h3 className="text-sm font-semibold text-white mb-3">What happens after upload?</h3>
+        <ul className="space-y-2 text-sm text-neutral-400">
           <li className="flex gap-2">
-            <span className="text-primary">1.</span>
+            <span className="text-red-500">1.</span>
             <span>Your video is uploaded to secure cloud storage</span>
           </li>
           <li className="flex gap-2">
-            <span className="text-primary">2.</span>
+            <span className="text-red-500">2.</span>
             <span>Processing begins to create platform-specific formats</span>
           </li>
           <li className="flex gap-2">
-            <span className="text-primary">3.</span>
-            <span>
-              7 versions are generated: Instagram Reel/Feed, YouTube Shorts/Video/Square, Facebook
-              Square/Landscape
-            </span>
+            <span className="text-red-500">3.</span>
+            <span>7 versions are generated for Instagram, YouTube, and Facebook</span>
           </li>
           <li className="flex gap-2">
-            <span className="text-primary">4.</span>
+            <span className="text-red-500">4.</span>
             <span>Thumbnails are extracted at 1s, 3s, and 5s marks</span>
           </li>
           <li className="flex gap-2">
-            <span className="text-primary">5.</span>
+            <span className="text-red-500">5.</span>
             <span>Once ready, you can create posts for all platforms</span>
           </li>
         </ul>

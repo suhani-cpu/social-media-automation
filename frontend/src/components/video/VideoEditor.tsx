@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Download, Scissors, Play, Pause } from 'lucide-react';
+import { Scissors, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import apiClient from '@/lib/api/client';
 
 interface VideoEditorProps {
@@ -104,11 +110,11 @@ export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps)
             bottomCaption,
             captionFontSize,
             captionColor,
-            includeLogo
-          }
+            includeLogo,
+          },
         },
         {
-          responseType: 'blob'
+          responseType: 'blob',
         }
       );
 
@@ -221,10 +227,9 @@ export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps)
 
             <div className="p-3 bg-muted rounded-lg">
               <p className="text-sm">
-                Clip Duration: <span className="font-semibold">{formatTime(endTime - startTime)}</span>
-                <span className="text-muted-foreground ml-2">
-                  (Max: 10 minutes)
-                </span>
+                Clip Duration:{' '}
+                <span className="font-semibold">{formatTime(endTime - startTime)}</span>
+                <span className="text-muted-foreground ml-2">(Max: 10 minutes)</span>
               </p>
             </div>
           </div>
@@ -346,9 +351,7 @@ export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps)
 
       {/* Error Message */}
       {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
-        </div>
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
       )}
 
       {/* Actions */}

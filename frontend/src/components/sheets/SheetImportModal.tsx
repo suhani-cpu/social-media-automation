@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Table, Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -38,6 +39,7 @@ interface ImportResult {
 }
 
 export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImportModalProps) {
+  const router = useRouter();
   const { success, error } = useToast();
   const [sheetUrl, setSheetUrl] = useState('');
   const [isPreview, setIsPreview] = useState(false);
@@ -58,13 +60,13 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
         params: { sheetUrl },
       });
 
-      setPreviewData(response.data);
+      setPreviewData({
+        ...response.data.summary,
+        videos: response.data.videos,
+      });
       setStep('preview');
     } catch (err: any) {
-      error(
-        '❌ Preview Failed',
-        err.response?.data?.message || 'शीट लोड करने में समस्या आई है'
-      );
+      error('❌ Preview Failed', err.response?.data?.message || 'शीट लोड करने में समस्या आई है');
     } finally {
       setIsPreview(false);
     }
@@ -75,7 +77,7 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
     setStep('importing');
 
     try {
-      const response = await apiClient.post('/sheets/import', { sheetUrl });
+      const response = await apiClient.post('/sheets/import', { sheetUrl }, { timeout: 300000 });
 
       setImportResults(response.data.results);
       setStep('results');
@@ -96,10 +98,7 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
 
       onImportSuccess?.();
     } catch (err: any) {
-      error(
-        '❌ Import Failed',
-        err.response?.data?.message || 'इम्पोर्ट में समस्या आई है'
-      );
+      error('❌ Import Failed', err.response?.data?.message || 'इम्पोर्ट में समस्या आई है');
       setStep('preview');
     } finally {
       setIsImporting(false);
@@ -107,11 +106,15 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
   };
 
   const handleClose = () => {
+    const hadResults = importResults.length > 0;
     setSheetUrl('');
     setPreviewData(null);
     setImportResults([]);
     setStep('input');
     onClose();
+    if (hadResults) {
+      router.push('/dashboard/posts?sort=newest');
+    }
   };
 
   if (!isOpen) return null;
@@ -153,9 +156,7 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
           {step === 'input' && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Google Sheets URL *
-                </label>
+                <label className="block text-sm font-medium mb-2">Google Sheets URL *</label>
                 <input
                   type="url"
                   value={sheetUrl}
@@ -239,29 +240,28 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
               <div>
                 <h3 className="font-semibold text-lg mb-3">Videos to Import:</h3>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {previewData.videos && previewData.videos.map((video, index) => (
-                    <div
-                      key={index}
-                      className="border-2 rounded-lg p-3 hover:bg-primary/5"
-                    >
-                      <div className="font-medium">{video.title}</div>
-                      <div className="text-sm text-muted-foreground truncate">
-                        {video.description}
+                  {previewData.videos &&
+                    previewData.videos.map((video, index) => (
+                      <div key={index} className="border-2 rounded-lg p-3 hover:bg-primary/5">
+                        <div className="font-medium">{video.title}</div>
+                        <div className="text-sm text-muted-foreground truncate">
+                          {video.description}
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          {video.driveLinksCount > 0 && (
+                            <span className="text-xs bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              📁 {video.driveLinksCount} Drive link
+                              {video.driveLinksCount > 1 ? 's' : ''}
+                            </span>
+                          )}
+                          {video.has9_16 && (
+                            <span className="text-xs bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
+                              📱 9:16 Vertical
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex gap-2 mt-2">
-                        {video.driveLinksCount > 0 && (
-                          <span className="text-xs bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300 px-2 py-1 rounded">
-                            📁 {video.driveLinksCount} Drive link{video.driveLinksCount > 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {video.has9_16 && (
-                          <span className="text-xs bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 px-2 py-1 rounded">
-                            📱 9:16 Vertical
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             </div>
@@ -315,7 +315,8 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
                           {result.success ? (
                             <div className="space-y-1">
                               <div className="text-sm text-green-600 dark:text-green-400">
-                                ✅ Video imported from {result.source === 'drive' ? 'Google Drive' : 'YouTube'}
+                                ✅ Video imported from{' '}
+                                {result.source === 'drive' ? 'Google Drive' : 'YouTube'}
                               </div>
                               {result.postCreated && (
                                 <div className="text-xs text-blue-600 dark:text-blue-400">
@@ -369,11 +370,7 @@ export function SheetImportModal({ isOpen, onClose, onImportSuccess }: SheetImpo
 
             {step === 'preview' && (
               <>
-                <Button
-                  onClick={() => setStep('input')}
-                  variant="outline"
-                  disabled={isImporting}
-                >
+                <Button onClick={() => setStep('input')} variant="outline" disabled={isImporting}>
                   Back
                 </Button>
                 <Button

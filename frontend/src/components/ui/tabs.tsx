@@ -1,34 +1,55 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-interface TabsProps {
+interface TabsContextValue {
   value: string;
   onValueChange: (value: string) => void;
+}
+
+const TabsContext = React.createContext<TabsContextValue | null>(null);
+
+function useTabsContext() {
+  const ctx = React.useContext(TabsContext);
+  if (!ctx) throw new Error('Tabs components must be used within a <Tabs> provider');
+  return ctx;
+}
+
+interface TabsProps {
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
   children: React.ReactNode;
   className?: string;
 }
 
-export function Tabs({ value, onValueChange, children, className }: TabsProps) {
+export function Tabs({
+  value: controlledValue,
+  defaultValue,
+  onValueChange,
+  children,
+  className,
+}: TabsProps) {
+  const [internalValue, setInternalValue] = React.useState(defaultValue || '');
+  const currentValue = controlledValue ?? internalValue;
+
+  const handleChange = React.useCallback(
+    (val: string) => {
+      if (controlledValue === undefined) setInternalValue(val);
+      onValueChange?.(val);
+    },
+    [controlledValue, onValueChange]
+  );
+
   return (
-    <div className={cn('w-full', className)} data-value={value}>
-      {React.Children.map(children, (child) => {
-        if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<any>, {
-            value,
-            onValueChange,
-          });
-        }
-        return child;
-      })}
-    </div>
+    <TabsContext.Provider value={{ value: currentValue, onValueChange: handleChange }}>
+      <div className={cn('w-full', className)}>{children}</div>
+    </TabsContext.Provider>
   );
 }
 
 interface TabsListProps {
   children: React.ReactNode;
   className?: string;
-  value?: string;
-  onValueChange?: (value: string) => void;
 }
 
 export function TabsList({ children, className }: TabsListProps) {
@@ -48,18 +69,11 @@ interface TabsTriggerProps {
   value: string;
   children: React.ReactNode;
   className?: string;
-  parentValue?: string;
-  onValueChange?: (value: string) => void;
 }
 
-export function TabsTrigger({
-  value,
-  children,
-  className,
-  parentValue,
-  onValueChange,
-}: TabsTriggerProps) {
-  const isActive = parentValue === value;
+export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
+  const { value: currentValue, onValueChange } = useTabsContext();
+  const isActive = currentValue === value;
 
   return (
     <button
@@ -70,7 +84,7 @@ export function TabsTrigger({
           : 'hover:bg-background/50 hover:text-foreground',
         className
       )}
-      onClick={() => onValueChange?.(value)}
+      onClick={() => onValueChange(value)}
     >
       {children}
     </button>
@@ -81,11 +95,11 @@ interface TabsContentProps {
   value: string;
   children: React.ReactNode;
   className?: string;
-  parentValue?: string;
 }
 
-export function TabsContent({ value, children, className, parentValue }: TabsContentProps) {
-  if (parentValue !== value) return null;
+export function TabsContent({ value, children, className }: TabsContentProps) {
+  const { value: currentValue } = useTabsContext();
+  if (currentValue !== value) return null;
 
   return (
     <div

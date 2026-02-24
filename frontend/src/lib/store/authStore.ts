@@ -8,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   _hasHydrated: boolean;
   setAuth: (user: User, token: string) => void;
+  updateUser: (user: Partial<User>) => void;
   logout: () => void;
   setHasHydrated: (state: boolean) => void;
 }
@@ -25,12 +26,21 @@ export const useAuthStore = create<AuthState>()(
           token,
           isAuthenticated: true,
         }),
-      logout: () =>
+      updateUser: (userData) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...userData } : null,
+        })),
+      logout: () => {
+        // Clear the token from localStorage (set separately during login)
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+        }
         set({
           user: null,
           token: null,
           isAuthenticated: false,
-        }),
+        });
+      },
       setHasHydrated: (state) =>
         set({
           _hasHydrated: state,
@@ -38,8 +48,12 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true);
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Zustand rehydration error:', error);
+        }
+        // Always mark as hydrated, even on error, so the app doesn't get stuck
+        useAuthStore.setState({ _hasHydrated: true });
       },
     }
   )

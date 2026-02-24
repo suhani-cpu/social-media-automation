@@ -44,8 +44,11 @@ export default function CreatePostPage() {
   // Step 3: Platforms
   const [platformSelections, setPlatformSelections] = useState<PlatformSelection[]>([]);
 
-  // Step 4: Schedule
+  // Step 4: Schedule & Privacy
   const [scheduledFor, setScheduledFor] = useState<string | null>(null);
+  const [privacyStatus, setPrivacyStatus] = useState<string>('public');
+
+  const hasYouTube = platformSelections.some((s) => s.platform === 'YOUTUBE');
 
   const canProceed = () => {
     switch (currentStep) {
@@ -99,6 +102,7 @@ export default function CreatePostPage() {
           platform: selection.platform,
           postType: selection.postType,
           scheduledFor: scheduledFor || undefined,
+          metadata: selection.platform === 'YOUTUBE' ? { privacyStatus } : undefined,
         })
       );
 
@@ -130,7 +134,16 @@ export default function CreatePostPage() {
       </div>
 
       {/* Stepper */}
-      <Stepper steps={steps} currentStep={currentStep} />
+      <Stepper
+        steps={steps}
+        currentStep={currentStep}
+        onStepClick={(index) => {
+          if (index < currentStep) {
+            setCurrentStep(index);
+            setError(null);
+          }
+        }}
+      />
 
       {/* Step Content */}
       <div className="rounded-lg border bg-card p-6">
@@ -157,7 +170,13 @@ export default function CreatePostPage() {
         )}
 
         {currentStep === 3 && (
-          <ScheduleSelector scheduledFor={scheduledFor} onScheduleChange={setScheduledFor} />
+          <ScheduleSelector
+            scheduledFor={scheduledFor}
+            onScheduleChange={setScheduledFor}
+            privacyStatus={privacyStatus}
+            onPrivacyChange={setPrivacyStatus}
+            hasYouTube={hasYouTube}
+          />
         )}
 
         {currentStep === 4 && selectedVideo && selectedCaption && (
@@ -167,24 +186,19 @@ export default function CreatePostPage() {
             language={language}
             platforms={platformSelections}
             scheduledFor={scheduledFor}
+            onCaptionEdit={setSelectedCaption}
           />
         )}
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {error}
-        </div>
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
       )}
 
       {/* Navigation Buttons */}
       <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          onClick={handleBack}
-          disabled={currentStep === 0 || isSubmitting}
-        >
+        <Button variant="outline" onClick={handleBack} disabled={currentStep === 0 || isSubmitting}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>

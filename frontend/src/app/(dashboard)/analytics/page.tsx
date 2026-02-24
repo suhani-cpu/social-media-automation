@@ -2,7 +2,16 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Eye, Heart, MessageCircle, Share2, TrendingUp, Instagram, Youtube, Facebook } from 'lucide-react';
+import {
+  Eye,
+  Heart,
+  MessageCircle,
+  Share2,
+  TrendingUp,
+  Instagram,
+  Youtube,
+  Facebook,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -19,12 +28,14 @@ import { SimpleBarChart } from '@/components/analytics/SimpleBarChart';
 import { SimpleLineChart } from '@/components/analytics/SimpleLineChart';
 import { analyticsApi } from '@/lib/api/analytics';
 import { Platform } from '@/lib/types/api';
-import { formatDate } from '@/lib/utils';
 
-const platformConfig = {
+const platformConfig: Record<string, { name: string; icon: typeof Instagram; color: string }> = {
   INSTAGRAM: { name: 'Instagram', icon: Instagram, color: 'bg-pink-500' },
   YOUTUBE: { name: 'YouTube', icon: Youtube, color: 'bg-red-500' },
   FACEBOOK: { name: 'Facebook', icon: Facebook, color: 'bg-blue-500' },
+  TWITTER: { name: 'Twitter', icon: Share2, color: 'bg-sky-500' },
+  LINKEDIN: { name: 'LinkedIn', icon: Share2, color: 'bg-blue-700' },
+  GOOGLE_DRIVE: { name: 'Google Drive', icon: TrendingUp, color: 'bg-green-500' },
 };
 
 export default function AnalyticsPage() {
@@ -69,14 +80,20 @@ export default function AnalyticsPage() {
     if (!analytics?.timeline) return [];
 
     // Group by date and sum values
-    const grouped = analytics.timeline.reduce((acc, entry) => {
-      const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      if (!acc[date]) {
-        acc[date] = { label: date, value: 0 };
-      }
-      acc[date].value += entry.views;
-      return acc;
-    }, {} as Record<string, { label: string; value: number }>);
+    const grouped = analytics.timeline.reduce(
+      (acc, entry) => {
+        const date = new Date(entry.date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        });
+        if (!acc[date]) {
+          acc[date] = { label: date, value: 0 };
+        }
+        acc[date].value += entry.views;
+        return acc;
+      },
+      {} as Record<string, { label: string; value: number }>
+    );
 
     return Object.values(grouped).slice(-14); // Last 14 days
   }, [analytics]);
@@ -99,9 +116,7 @@ export default function AnalyticsPage() {
                 id="start-date"
                 type="date"
                 value={dateRange.startDate}
-                onChange={(e) =>
-                  setDateRange((prev) => ({ ...prev, startDate: e.target.value }))
-                }
+                onChange={(e) => setDateRange((prev) => ({ ...prev, startDate: e.target.value }))}
                 className="mt-2"
               />
             </div>
@@ -111,9 +126,7 @@ export default function AnalyticsPage() {
                 id="end-date"
                 type="date"
                 value={dateRange.endDate}
-                onChange={(e) =>
-                  setDateRange((prev) => ({ ...prev, endDate: e.target.value }))
-                }
+                onChange={(e) => setDateRange((prev) => ({ ...prev, endDate: e.target.value }))}
                 max={new Date().toISOString().split('T')[0]}
                 className="mt-2"
               />
@@ -157,21 +170,13 @@ export default function AnalyticsPage() {
             icon={Eye}
             subtitle={`${analytics.summary.posts} posts`}
           />
-          <MetricsCard
-            title="Total Likes"
-            value={analytics.summary.likes}
-            icon={Heart}
-          />
+          <MetricsCard title="Total Likes" value={analytics.summary.likes} icon={Heart} />
           <MetricsCard
             title="Total Comments"
             value={analytics.summary.comments}
             icon={MessageCircle}
           />
-          <MetricsCard
-            title="Total Shares"
-            value={analytics.summary.shares}
-            icon={Share2}
-          />
+          <MetricsCard title="Total Shares" value={analytics.summary.shares} icon={Share2} />
           <MetricsCard
             title="Avg Engagement"
             value={`${analytics.summary.avgEngagementRate.toFixed(2)}%`}
@@ -180,7 +185,9 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <div className="rounded-lg border bg-card p-8 text-center">
-          <p className="text-muted-foreground">No analytics data available for the selected period</p>
+          <p className="text-muted-foreground">
+            No analytics data available for the selected period
+          </p>
         </div>
       )}
 

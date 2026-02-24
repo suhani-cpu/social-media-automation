@@ -15,9 +15,10 @@ interface PostReviewProps {
   language: Language;
   platforms: PlatformSelection[];
   scheduledFor: string | null;
+  onCaptionEdit?: (updated: CaptionVariation) => void;
 }
 
-const platformConfig = {
+const platformConfig: Record<string, any> = {
   INSTAGRAM: { name: 'Instagram', icon: Instagram, color: 'text-pink-600' },
   YOUTUBE: { name: 'YouTube', icon: Youtube, color: 'text-red-600' },
   FACEBOOK: { name: 'Facebook', icon: Facebook, color: 'text-blue-600' },
@@ -28,6 +29,8 @@ const languageNames: Record<Language, string> = {
   HINGLISH: 'Hinglish',
   HARYANVI: 'Haryanvi',
   HINDI: 'Hindi',
+  RAJASTHANI: 'Rajasthani',
+  BHOJPURI: 'Bhojpuri',
 };
 
 export function PostReview({
@@ -36,6 +39,7 @@ export function PostReview({
   language,
   platforms,
   scheduledFor,
+  onCaptionEdit,
 }: PostReviewProps) {
   return (
     <div className="space-y-6">
@@ -67,7 +71,7 @@ export function PostReview({
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold truncate">{video.title}</h4>
               <p className="text-sm text-muted-foreground mt-1">
-                {formatFileSize(video.size)}
+                {formatFileSize(video.fileSize || video.size || 0)}
                 {video.duration && ` • ${Math.round(video.duration)}s`}
               </p>
               <div className="mt-2">
@@ -93,7 +97,16 @@ export function PostReview({
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground mb-1">Text</p>
-              <p className="whitespace-pre-wrap">{caption.caption}</p>
+              {onCaptionEdit ? (
+                <textarea
+                  value={caption.caption}
+                  onChange={(e) => onCaptionEdit({ ...caption, caption: e.target.value })}
+                  className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  rows={4}
+                />
+              ) : (
+                <p className="whitespace-pre-wrap">{caption.caption}</p>
+              )}
             </div>
             {caption.hashtags.length > 0 && (
               <div>

@@ -42,7 +42,7 @@ export default function CalendarPage() {
     }
   };
 
-  const handleReschedule = (postId: string) => {
+  const handleReschedule = (_postId: string) => {
     alert('Reschedule feature coming soon');
   };
 
@@ -149,9 +149,7 @@ export default function CalendarPage() {
               {scheduledPosts
                 .sort((a, b) => {
                   if (!a.scheduledFor || !b.scheduledFor) return 0;
-                  return (
-                    new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime()
-                  );
+                  return new Date(a.scheduledFor).getTime() - new Date(b.scheduledFor).getTime();
                 })
                 .map((post) => (
                   <PostCard

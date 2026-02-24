@@ -16,7 +16,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { VideoCard } from '@/components/video/VideoCard';
 import { videosApi } from '@/lib/api/videos';
-import { Video, VideoStatus } from '@/lib/types/api';
+import { VideoStatus } from '@/lib/types/api';
 
 export default function VideosPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,9 +82,7 @@ export default function VideosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Videos</h1>
-          <p className="text-muted-foreground">
-            Manage your video library and upload new content
-          </p>
+          <p className="text-muted-foreground">Manage your video library and upload new content</p>
         </div>
         <Link href="/dashboard/videos/upload">
           <Button>

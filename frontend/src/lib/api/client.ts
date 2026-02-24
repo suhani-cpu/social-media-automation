@@ -34,10 +34,8 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
+      // Clear auth state - ProtectedRoute will handle redirect to /login
       useAuthStore.getState().logout();
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
     }
     return Promise.reject(error);
   }

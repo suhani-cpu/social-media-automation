@@ -21,7 +21,7 @@ interface PlatformSelectorProps {
   onSelectionChange: (selections: PlatformSelection[]) => void;
 }
 
-const platformConfig = {
+const platformConfig: Record<string, any> = {
   INSTAGRAM: {
     name: 'Instagram',
     icon: Instagram,
@@ -102,9 +102,7 @@ export function PlatformSelector({ selections, onSelectionChange }: PlatformSele
   };
 
   const updatePlatformSelection = (platform: Platform, updates: Partial<PlatformSelection>) => {
-    onSelectionChange(
-      selections.map((s) => (s.platform === platform ? { ...s, ...updates } : s))
-    );
+    onSelectionChange(selections.map((s) => (s.platform === platform ? { ...s, ...updates } : s)));
   };
 
   if (isLoading) {
@@ -163,22 +161,19 @@ export function PlatformSelector({ selections, onSelectionChange }: PlatformSele
               onClick={() => hasAccounts && !isSelected && togglePlatform(platform)}
             >
               {/* Gradient Top Border */}
-              {isSelected && (
-                <div className={`h-1 ${config.gradient}`}></div>
-              )}
+              {isSelected && <div className={`h-1 ${config.gradient}`}></div>}
               <CardContent className="p-4">
                 <div className="space-y-4">
                   {/* Platform Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={cn(
-                        'w-12 h-12 rounded-full flex items-center justify-center',
-                        isSelected ? config.gradient : 'bg-muted'
-                      )}>
-                        <Icon className={cn(
-                          'h-6 w-6',
-                          isSelected ? 'text-white' : config.color
-                        )} />
+                      <div
+                        className={cn(
+                          'w-12 h-12 rounded-full flex items-center justify-center',
+                          isSelected ? config.gradient : 'bg-muted'
+                        )}
+                      >
+                        <Icon className={cn('h-6 w-6', isSelected ? 'text-white' : config.color)} />
                       </div>
                       <div>
                         <h4 className="font-semibold">{config.name}</h4>
@@ -251,7 +246,7 @@ export function PlatformSelector({ selections, onSelectionChange }: PlatformSele
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {config.postTypes.map((type) => (
+                            {config.postTypes.map((type: { value: string; label: string }) => (
                               <SelectItem key={type.value} value={type.value}>
                                 {type.label}
                               </SelectItem>

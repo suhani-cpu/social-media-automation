@@ -2,13 +2,26 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Video, FileText, Calendar, TrendingUp, Upload, Plus, Instagram, Youtube, Facebook } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Video,
+  FileText,
+  Calendar,
+  TrendingUp,
+  Upload,
+  Plus,
+  Clock,
+  Sparkles,
+  AlertTriangle,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import apiClient from '@/lib/api/client';
+import { analyticsApi } from '@/lib/api/posts';
 import { Video as VideoType, Post } from '@/lib/types/api';
+import { useAuthStore } from '@/lib/store/authStore';
 
 export default function DashboardPage() {
+  const user = useAuthStore((s) => s.user);
+
   const { data: videos } = useQuery({
     queryKey: ['videos'],
     queryFn: async () => {
@@ -25,202 +38,290 @@ export default function DashboardPage() {
     },
   });
 
+  const { data: bestTimes } = useQuery({
+    queryKey: ['best-times'],
+    queryFn: () => analyticsApi.getBestTimes(),
+    staleTime: 60000,
+  });
+
+  const { data: insights } = useQuery({
+    queryKey: ['insights'],
+    queryFn: () => analyticsApi.getInsights(),
+    staleTime: 60000,
+  });
+
   const stats = {
     totalVideos: videos?.length || 0,
     readyVideos: videos?.filter((v) => v.status === 'READY').length || 0,
     totalPosts: posts?.length || 0,
     scheduledPosts: posts?.filter((p) => p.status === 'SCHEDULED').length || 0,
     publishedPosts: posts?.filter((p) => p.status === 'PUBLISHED').length || 0,
+    failedPosts: posts?.filter((p) => p.status === 'FAILED').length || 0,
+    publishingPosts: posts?.filter((p) => p.status === 'PUBLISHING').length || 0,
   };
+
+  const _totalViews =
+    insights?.platforms?.reduce(
+      (acc: number, p: any) =>
+        acc +
+        (p.avgViews * (insights?.totalPublished || 0)) /
+          Math.max(insights?.platforms?.length || 1, 1),
+      0
+    ) || 0;
 
   return (
     <div className="space-y-6">
-      {/* Header with Gradient Background */}
-      <div className="multi-social-gradient rounded-xl p-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="flex gap-4 justify-end items-start p-4">
-            <Instagram className="w-8 h-8 text-white" />
-            <Youtube className="w-8 h-8 text-white" />
-            <Facebook className="w-8 h-8 text-white" />
+      {/* Header */}
+      <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              {user?.brandName ? `${user.brandName} Dashboard` : 'Dashboard'}
+            </h1>
+            <p className="text-sm text-neutral-500 mt-1">
+              {user?.name ? `Welcome back, ${user.name}` : 'Manage your social media content'}
+            </p>
           </div>
-        </div>
-        <div className="relative">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Welcome to Stage OTT 👋</h1>
-              <p className="text-white/90">Automate your social media content across Instagram, YouTube & Facebook</p>
-            </div>
-            <div className="flex gap-2">
-              <Link href="/dashboard/videos/upload">
-                <Button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border-white/30 hover-scale">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Video
-                </Button>
-              </Link>
-              <Link href="/dashboard/posts/create">
-                <Button className="bg-white text-primary hover:bg-white/90 hover-scale vibrant-glow">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Post
-                </Button>
-              </Link>
-            </div>
+          <div className="flex gap-2">
+            <Link href="/dashboard/videos/upload">
+              <Button
+                variant="outline"
+                className="border-[#1a1a1a] text-neutral-300 hover:bg-[#1a1a1a] hover:text-white"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Video
+              </Button>
+            </Link>
+            <Link href="/dashboard/posts/create">
+              <Button className="bg-red-600 hover:bg-red-700 text-white">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Post
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Vibrant Stats Cards */}
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="overflow-hidden hover-scale border-primary/30 hover:shadow-xl hover:shadow-primary/20 transition-all">
-          <div className="stage-gradient h-1"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Videos 🎬</CardTitle>
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Video className="h-5 w-5 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalVideos}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              ✅ {stats.readyVideos} ready to post
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Videos</p>
+            <Video className="h-4 w-4 text-red-500" />
+          </div>
+          <p className="text-2xl font-bold text-white">{stats.totalVideos}</p>
+          <p className="text-xs text-neutral-500 mt-1">{stats.readyVideos} ready to post</p>
+        </div>
 
-        <Card className="overflow-hidden hover-scale border-[hsl(var(--instagram-pink))]/30 hover:shadow-xl hover:shadow-[hsl(var(--instagram-pink))]/20 transition-all">
-          <div className="instagram-gradient h-1"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Posts 📱</CardTitle>
-            <div className="w-10 h-10 rounded-full bg-[hsl(var(--instagram-pink))]/10 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-[hsl(var(--instagram-pink))]" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.totalPosts}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              ✨ {stats.publishedPosts} published
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+              Published
             </p>
-          </CardContent>
-        </Card>
+            <FileText className="h-4 w-4 text-green-500" />
+          </div>
+          <p className="text-2xl font-bold text-white">{stats.publishedPosts}</p>
+          <p className="text-xs text-neutral-500 mt-1">{stats.totalPosts} total posts</p>
+        </div>
 
-        <Card className="overflow-hidden hover-scale border-[hsl(var(--facebook-blue))]/30 hover:shadow-xl hover:shadow-[hsl(var(--facebook-blue))]/20 transition-all">
-          <div className="facebook-gradient h-1"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Scheduled 📅</CardTitle>
-            <div className="w-10 h-10 rounded-full bg-[hsl(var(--facebook-blue))]/10 flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-[hsl(var(--facebook-blue))]" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{stats.scheduledPosts}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              ⏰ Upcoming posts
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+              Scheduled
             </p>
-          </CardContent>
-        </Card>
+            <Calendar className="h-4 w-4 text-blue-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{stats.scheduledPosts}</p>
+          <p className="text-xs text-neutral-500 mt-1">
+            {stats.publishingPosts > 0
+              ? `${stats.publishingPosts} publishing now`
+              : 'Upcoming posts'}
+          </p>
+        </div>
 
-        <Card className="overflow-hidden hover-scale border-[hsl(var(--youtube-red))]/30 hover:shadow-xl hover:shadow-[hsl(var(--youtube-red))]/20 transition-all">
-          <div className="youtube-gradient h-1"></div>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Engagement 📈</CardTitle>
-            <div className="w-10 h-10 rounded-full bg-[hsl(var(--youtube-red))]/10 flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-[hsl(var(--youtube-red))]" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">-</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              🚀 Coming soon
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
+              Engagement
             </p>
-          </CardContent>
-        </Card>
+            <TrendingUp className="h-4 w-4 text-red-500" />
+          </div>
+          <p className="text-2xl font-bold text-white">
+            {insights?.totalPublished ? `${insights.totalPublished}` : '-'}
+          </p>
+          <p className="text-xs text-neutral-500 mt-1">
+            {insights?.insights?.[0] || 'Publish more to see insights'}
+          </p>
+        </div>
       </div>
 
+      {/* Best Time Suggestion + Failed Posts Alert */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Videos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {videos && videos.length > 0 ? (
-              <div className="space-y-4">
-                {videos.slice(0, 5).map((video) => (
-                  <div key={video.id} className="flex items-center gap-4">
-                    {video.thumbnailUrl && (
-                      <img
-                        src={video.thumbnailUrl}
-                        alt={video.title}
-                        className="h-12 w-20 rounded object-cover"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{video.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Status:{' '}
-                        <span
-                          className={
-                            video.status === 'READY'
-                              ? 'text-[hsl(var(--status-success))] font-semibold'
-                              : video.status === 'PROCESSING'
-                              ? 'text-[hsl(var(--status-processing))] font-semibold'
-                              : video.status === 'FAILED'
-                              ? 'text-[hsl(var(--status-error))] font-semibold'
-                              : 'text-[hsl(var(--status-pending))] font-semibold'
-                          }
-                        >
-                          {video.status === 'READY' ? '✅ ' : video.status === 'PROCESSING' ? '⏳ ' : video.status === 'FAILED' ? '❌ ' : '⏸️ '}
-                          {video.status}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No videos yet. Upload your first video!</p>
-            )}
-          </CardContent>
-        </Card>
+        {/* Best Time to Post */}
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock className="h-4 w-4 text-red-500" />
+            <h3 className="text-sm font-semibold text-white">Best Time to Post</h3>
+            <Sparkles className="h-3 w-3 text-red-500" />
+          </div>
+          {bestTimes?.hasEnoughData ? (
+            <div className="space-y-3">
+              <p className="text-sm text-neutral-300">{bestTimes.suggestion}</p>
+              {bestTimes.bestHours?.slice(0, 3).map((h: any, i: number) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <span className="text-neutral-400">{h.hour}:00</span>
+                  <span className="text-neutral-300">{h.avgEngagement}% avg engagement</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm text-neutral-400">
+                {bestTimes?.suggestion ||
+                  'Publish 5+ posts to get personalized AI time suggestions'}
+              </p>
+              {bestTimes?.defaultSuggestions?.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs text-neutral-500">Industry defaults:</p>
+                  {bestTimes.defaultSuggestions.map((s: string, i: number) => (
+                    <p key={i} className="text-xs text-neutral-400">
+                      {s}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Posts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {posts && posts.length > 0 ? (
-              <div className="space-y-4">
-                {posts.slice(0, 5).map((post) => (
-                  <div key={post.id} className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {post.platform === 'INSTAGRAM' && <Instagram className="w-4 h-4 text-[hsl(var(--instagram-pink))]" />}
-                        {post.platform === 'YOUTUBE' && <Youtube className="w-4 h-4 text-[hsl(var(--youtube-red))]" />}
-                        {post.platform === 'FACEBOOK' && <Facebook className="w-4 h-4 text-[hsl(var(--facebook-blue))]" />}
-                        <p className="text-sm font-medium">{post.platform}</p>
-                      </div>
-                      <span
-                        className={`text-xs font-semibold ${
-                          post.status === 'PUBLISHED'
-                            ? 'text-[hsl(var(--status-success))]'
-                            : post.status === 'SCHEDULED'
-                            ? 'text-[hsl(var(--facebook-blue))]'
-                            : post.status === 'FAILED'
-                            ? 'text-[hsl(var(--status-error))]'
-                            : 'text-[hsl(var(--status-pending))]'
-                        }`}
-                      >
-                        {post.status === 'PUBLISHED' ? '✅ ' : post.status === 'SCHEDULED' ? '📅 ' : post.status === 'FAILED' ? '❌ ' : '📝 '}
-                        {post.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground line-clamp-2">{post.caption}</p>
-                  </div>
+        {/* Failed Posts Alert */}
+        {stats.failedPosts > 0 ? (
+          <div className="rounded-lg border border-red-500/20 bg-red-500/5 p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <h3 className="text-sm font-semibold text-red-400">Failed Posts</h3>
+            </div>
+            <p className="text-sm text-neutral-300 mb-3">
+              {stats.failedPosts} post{stats.failedPosts > 1 ? 's' : ''} failed to publish. You can
+              retry them.
+            </p>
+            <Link href="/dashboard/posts">
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+              >
+                View Failed Posts
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          /* Performance Insights */
+          <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="h-4 w-4 text-red-500" />
+              <h3 className="text-sm font-semibold text-white">Performance Insights</h3>
+            </div>
+            {insights?.insights?.length > 0 ? (
+              <div className="space-y-3">
+                {insights.insights.map((insight: string, i: number) => (
+                  <p key={i} className="text-sm text-neutral-300">
+                    {insight}
+                  </p>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No posts yet. Create your first post!</p>
+              <p className="text-sm text-neutral-400">
+                Publish more posts to unlock performance insights
+              </p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Recent Content */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-white">Recent Videos</h3>
+            <Link href="/dashboard/videos">
+              <span className="text-xs text-red-500 hover:text-red-400">View All</span>
+            </Link>
+          </div>
+          {videos && videos.length > 0 ? (
+            <div className="space-y-3">
+              {videos.slice(0, 5).map((video) => (
+                <div key={video.id} className="flex items-center gap-3">
+                  {video.thumbnailUrl && (
+                    <img
+                      src={video.thumbnailUrl}
+                      alt={video.title}
+                      className="h-10 w-16 rounded object-cover"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{video.title}</p>
+                    <p className="text-xs text-neutral-500">
+                      <span
+                        className={
+                          video.status === 'READY'
+                            ? 'text-green-500'
+                            : video.status === 'PROCESSING'
+                              ? 'text-yellow-500'
+                              : video.status === 'FAILED'
+                                ? 'text-red-500'
+                                : 'text-neutral-500'
+                        }
+                      >
+                        {video.status}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-500">No videos yet. Upload your first video!</p>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-white">Recent Posts</h3>
+            <Link href="/dashboard/posts">
+              <span className="text-xs text-red-500 hover:text-red-400">View All</span>
+            </Link>
+          </div>
+          {posts && posts.length > 0 ? (
+            <div className="space-y-3">
+              {posts.slice(0, 5).map((post) => (
+                <div key={post.id} className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-white">{post.platform}</p>
+                    <span
+                      className={`text-xs font-medium ${
+                        post.status === 'PUBLISHED'
+                          ? 'text-green-500'
+                          : post.status === 'SCHEDULED'
+                            ? 'text-blue-400'
+                            : post.status === 'FAILED'
+                              ? 'text-red-500'
+                              : post.status === 'PUBLISHING'
+                                ? 'text-yellow-500'
+                                : 'text-neutral-500'
+                      }`}
+                    >
+                      {post.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-500 line-clamp-1">{post.caption}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-neutral-500">No posts yet. Create your first post!</p>
+          )}
+        </div>
       </div>
     </div>
   );

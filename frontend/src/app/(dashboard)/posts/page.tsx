@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { PostCard } from '@/components/post/PostCard';
 import { postsApi } from '@/lib/api/posts';
-import { Post, PostStatus, Platform } from '@/lib/types/api';
+import { PostStatus, Platform } from '@/lib/types/api';
 
 export default function PostsPage() {
   const queryClient = useQueryClient();
@@ -26,7 +26,11 @@ export default function PostsPage() {
   const [platformFilter, setPlatformFilter] = useState<Platform | 'ALL'>('ALL');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'scheduled'>('newest');
 
-  const { data: posts, isLoading, refetch } = useQuery({
+  const {
+    data: posts,
+    isLoading,
+    refetch: _refetch,
+  } = useQuery({
     queryKey: ['posts'],
     queryFn: async () => {
       const response = await postsApi.getAll();
@@ -117,7 +121,7 @@ export default function PostsPage() {
     }
   };
 
-  const handleReschedule = (postId: string) => {
+  const handleReschedule = (_postId: string) => {
     // TODO: Open reschedule modal
     alert('Reschedule feature coming soon');
   };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
@@ -9,22 +9,23 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { Play } from 'lucide-react';
 import apiClient from '@/lib/api/client';
 import { useAuthStore } from '@/lib/store/authStore';
 import { AuthResponse, RegisterRequest } from '@/lib/types/api';
 
-const registerSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().optional(),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const registerSchema = z
+  .object({
+    firstName: z.string().min(2, 'First name must be at least 2 characters'),
+    lastName: z.string().optional(),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -33,6 +34,10 @@ export default function RegisterPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
 
   const {
     register,
@@ -47,8 +52,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const { confirmPassword, firstName, lastName, ...rest } = data;
-      // Combine firstName and lastName into single name field for backend
+      const { confirmPassword: _confirmPassword, firstName, lastName, ...rest } = data;
       const registerData = {
         ...rest,
         name: `${firstName} ${lastName}`.trim(),
@@ -60,12 +64,13 @@ export default function RegisterPage() {
       const { token, user } = response.data;
 
       setAuth(user, token);
-
-      // Wait for auth state to persist to localStorage before redirecting
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       router.push('/dashboard');
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.response?.data?.error || 'Registration failed. Please check your information and try again.';
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'Registration failed. Please try again.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -73,64 +78,62 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 relative">
-      {/* Theme Toggle in Top Right Corner */}
-      <div className="absolute top-6 right-6 z-50">
-        <ThemeToggle />
-      </div>
-
-      <Card className="w-full max-w-md overflow-hidden shadow-2xl border-primary/20">
-        {/* Vibrant Multi-Social Header */}
-        <div className="multi-social-gradient p-6 text-center">
-          <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full mx-auto mb-3 flex items-center justify-center">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-            </svg>
+    <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] px-4">
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="w-14 h-14 bg-red-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
+            <Play className="h-7 w-7 fill-current text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Join Stage OTT</h1>
-          <p className="text-white/90 text-sm mt-1">Start automating your social media 🚀</p>
+          <h1 className="text-2xl font-bold text-white">Stage OTT</h1>
+          <p className="text-sm text-neutral-500 mt-1">Social Media Automation</p>
         </div>
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Enter your information to get started</CardDescription>
-        </CardHeader>
-        <CardContent>
+
+        {/* Form */}
+        <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-6">
+          <h2 className="text-lg font-semibold text-white mb-1">Create account</h2>
+          <p className="text-sm text-neutral-500 mb-6">Enter your information to get started</p>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName" className="text-neutral-300 text-xs">
+                  First Name
+                </Label>
                 <Input
                   id="firstName"
                   placeholder="John"
                   data-testid="name-input"
                   {...register('firstName')}
                   disabled={isLoading}
+                  className="bg-[#0a0a0a] border-[#1a1a1a] text-white placeholder:text-neutral-600 focus:border-red-600 focus:ring-red-600/20"
                 />
                 {errors.firstName && (
-                  <p className="text-sm text-destructive">{errors.firstName.message}</p>
+                  <p className="text-xs text-red-500">{errors.firstName.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName" className="text-neutral-300 text-xs">
+                  Last Name
+                </Label>
                 <Input
                   id="lastName"
                   placeholder="Doe"
                   {...register('lastName')}
                   disabled={isLoading}
+                  className="bg-[#0a0a0a] border-[#1a1a1a] text-white placeholder:text-neutral-600 focus:border-red-600 focus:ring-red-600/20"
                 />
                 {errors.lastName && (
-                  <p className="text-sm text-destructive">{errors.lastName.message}</p>
+                  <p className="text-xs text-red-500">{errors.lastName.message}</p>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-neutral-300 text-xs">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -138,12 +141,15 @@ export default function RegisterPage() {
                 data-testid="email-input"
                 {...register('email')}
                 disabled={isLoading}
+                className="bg-[#0a0a0a] border-[#1a1a1a] text-white placeholder:text-neutral-600 focus:border-red-600 focus:ring-red-600/20"
               />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-neutral-300 text-xs">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -151,14 +157,15 @@ export default function RegisterPage() {
                 data-testid="password-input"
                 {...register('password')}
                 disabled={isLoading}
+                className="bg-[#0a0a0a] border-[#1a1a1a] text-white placeholder:text-neutral-600 focus:border-red-600 focus:ring-red-600/20"
               />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-              )}
+              {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-neutral-300 text-xs">
+                Confirm Password
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -166,31 +173,40 @@ export default function RegisterPage() {
                 data-testid="confirm-password-input"
                 {...register('confirmPassword')}
                 disabled={isLoading}
+                className="bg-[#0a0a0a] border-[#1a1a1a] text-white placeholder:text-neutral-600 focus:border-red-600 focus:ring-red-600/20"
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+                <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>
               )}
             </div>
 
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive" data-testid="error-message">
+              <div
+                className="rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400"
+                data-testid="error-message"
+              >
                 {error}
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading} data-testid="register-button">
+            <Button
+              type="submit"
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-medium"
+              disabled={isLoading}
+              data-testid="register-button"
+            >
               {isLoading ? 'Creating account...' : 'Create account'}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-xs text-neutral-500">
               Already have an account?{' '}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link href="/login" className="text-red-500 hover:text-red-400">
                 Login
               </Link>
             </p>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -10,26 +10,42 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Wait for Zustand to hydrate from localStorage
-    if (!_hasHydrated) return;
-
-    // After hydration, check if user is authenticated
-    if (!isAuthenticated) {
-      router.push('/login');
+    // Check zustand hydration first
+    if (_hasHydrated) {
+      if (isAuthenticated) {
+        setIsReady(true);
+      } else {
+        // Zustand hydrated but not authenticated - check localStorage as fallback
+        const token = localStorage.getItem('token');
+        if (token) {
+          // Token exists in localStorage but zustand lost it (can happen after OAuth redirects)
+          setIsReady(true);
+        } else {
+          router.push('/login');
+        }
+      }
       return;
     }
 
-    // User is authenticated and hydration complete
-    setIsReady(true);
+    // Fallback: if zustand hydration hasn't fired after 500ms, check localStorage directly
+    const timeout = setTimeout(() => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        setIsReady(true);
+      } else {
+        router.push('/login');
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
   }, [_hasHydrated, isAuthenticated, router]);
 
-  // Show nothing while waiting for hydration or redirecting
   if (!isReady) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
-          <p className="mt-4 text-sm text-muted-foreground">Loading...</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-600 border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-sm text-neutral-500">Loading...</p>
         </div>
       </div>
     );
