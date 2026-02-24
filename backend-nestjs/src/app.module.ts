@@ -47,14 +47,18 @@ import { HealthController } from './health.controller';
     // Scheduling (cron jobs)
     ScheduleModule.forRoot(),
 
-    // Bull queues
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        redis: configService.get<string>('REDIS_URL'),
-      }),
-      inject: [ConfigService],
-    }),
+    // Bull queues (optional — gracefully degrade if no REDIS_URL)
+    ...(process.env.REDIS_URL
+      ? [
+          BullModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: (configService: ConfigService) => ({
+              redis: configService.get<string>('REDIS_URL'),
+            }),
+            inject: [ConfigService],
+          }),
+        ]
+      : []),
 
     // Core modules
     PrismaModule,
