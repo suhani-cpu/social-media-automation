@@ -445,7 +445,7 @@ export class DriveService {
         title: title || fileMetadata.name,
         sourceType: 'MANUAL',
         status: 'PENDING',
-        fileSize: fileMetadata.size ? parseInt(fileMetadata.size) : 0,
+        fileSize: fileMetadata.size ? BigInt(fileMetadata.size) : BigInt(0),
         metadata: {
           driveFileId: fileId,
           driveFileName: fileMetadata.name,
@@ -486,7 +486,7 @@ export class DriveService {
         where: { id: videoId },
         data: {
           rawVideoUrl: tempFilePath,
-          fileSize: stats.size,
+          fileSize: BigInt(stats.size),
           status: 'READY',
         },
       });
@@ -537,7 +537,7 @@ export class DriveService {
             title: fileMetadata.name,
             sourceType: 'MANUAL',
             status: 'PENDING',
-            fileSize: fileMetadata.size ? parseInt(fileMetadata.size) : 0,
+            fileSize: fileMetadata.size ? BigInt(fileMetadata.size) : BigInt(0),
             metadata: {
               driveFileId: fileId,
               driveFileName: fileMetadata.name,

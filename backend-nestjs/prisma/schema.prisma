@@ -75,7 +75,7 @@ model Video {
   sourceType      SourceType @default(MANUAL)
   status          VideoStatus @default(PENDING)
   duration        Int?
-  fileSize        Int?
+  fileSize        BigInt?
 
   rawVideoUrl     String?
   thumbnailUrl    String?

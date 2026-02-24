@@ -7,6 +7,11 @@ import express from 'express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
+// Enable BigInt JSON serialization (safe for file sizes up to ~9PB)
+(BigInt.prototype as any).toJSON = function () {
+  return Number(this);
+};
+
 const server = express();
 
 async function createApp() {

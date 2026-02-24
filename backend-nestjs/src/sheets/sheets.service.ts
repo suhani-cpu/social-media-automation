@@ -150,7 +150,7 @@ export class SheetsService {
                       status: 'READY',
                       rawVideoUrl: tempFilePath,
                       instagramReelUrl: tempFilePath,
-                      fileSize: stats.size,
+                      fileSize: BigInt(stats.size),
                       metadata: {
                         source: 'google_sheets',
                         driveFileId: fileId,

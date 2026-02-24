@@ -100,7 +100,7 @@ export class TranscoderService {
         where: { id: videoId },
         data: {
           duration: Math.round(metadata.duration),
-          fileSize: metadata.size,
+          fileSize: BigInt(metadata.size),
         },
       });
 
