@@ -1,6 +1,4 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import { PrismaService } from '../prisma/prisma.service';
 import * as fs from 'fs/promises';
 
@@ -10,28 +8,23 @@ export class VideosService {
 
   constructor(
     private readonly prisma: PrismaService,
-    @InjectQueue('video-processing') private readonly videoQueue: Queue,
   ) {}
 
   async upload(userId: string, file: Express.Multer.File, body: { title?: string; description?: string; language?: string }) {
     const video = await this.prisma.video.create({
       data: {
         userId,
-        title: body.title || 'Untitled Video',
+        title: body.title || file.originalname || 'Untitled Video',
         description: body.description,
         language: body.language || 'HINGLISH',
         sourceType: 'MANUAL',
-        status: 'PENDING',
+        status: 'READY',
         rawVideoUrl: file.path,
+        fileSize: BigInt(file.size),
       },
     });
 
-    await this.videoQueue.add(
-      { videoId: video.id, userId },
-      { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
-    );
-
-    this.logger.log(`Video processing job queued for video ${video.id}`);
+    this.logger.log(`Video ${video.id} uploaded directly (${file.size} bytes)`);
     return { message: 'Video uploaded successfully', video };
   }
 

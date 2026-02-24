@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { videosApi, UploadProgress } from '@/lib/api/videos';
 import { formatFileSize } from '@/lib/utils';
 
-const MAX_FILE_SIZE = parseInt(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE || '1073741824'); // 1GB (1000MB)
+const MAX_FILE_SIZE = parseInt(process.env.NEXT_PUBLIC_MAX_UPLOAD_SIZE || '4500000'); // 4.5MB (Vercel serverless limit)
 const ALLOWED_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
 
 interface UploadState {
@@ -50,7 +50,7 @@ export function VideoUploader() {
       return 'Invalid file type. Please upload MP4, MOV, AVI, or WEBM.';
     }
     if (file.size > MAX_FILE_SIZE) {
-      return `File too large. Maximum size is ${formatFileSize(MAX_FILE_SIZE)}.`;
+      return `File too large (${formatFileSize(file.size)}). Direct upload supports up to ${formatFileSize(MAX_FILE_SIZE)}. For larger files, use "From Drive" on the Videos page — upload your video to Google Drive first, then import it.`;
     }
     return null;
   };
@@ -148,9 +148,7 @@ export function VideoUploader() {
           <CardContent className="pt-6">
             <div
               className={`relative rounded-lg border-2 border-dashed p-12 text-center transition-colors ${
-                dragActive
-                  ? 'border-primary bg-primary/5'
-                  : 'border-gray-300 hover:border-gray-400'
+                dragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-gray-400'
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -209,9 +207,7 @@ export function VideoUploader() {
                 <Input
                   id="title"
                   value={uploadState.title}
-                  onChange={(e) =>
-                    setUploadState((prev) => ({ ...prev, title: e.target.value }))
-                  }
+                  onChange={(e) => setUploadState((prev) => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter video title"
                   disabled={uploadState.uploading}
                 />
