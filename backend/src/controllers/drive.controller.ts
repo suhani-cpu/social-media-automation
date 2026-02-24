@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { AppError } from '../middleware/error-handler.middleware';
 import { logger } from '../utils/logger';
-import { getAuthUrl, handleCallback, disconnectDrive } from '../services/auth/drive-oauth';
+import { getAuthUrl, handleCallback, disconnectDrive, resolveState } from '../services/auth/drive-oauth';
 import { DriveStorageService } from '../services/google-drive/drive-storage.service';
 import { prisma } from '../config/database';
 import path from 'path';
@@ -30,20 +30,27 @@ export const startDriveAuth = async (req: AuthRequest, res: Response, next: Next
  */
 export const handleDriveCallback = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { code, state } = req.query;
+    const { code, state, error: oauthError } = req.query;
+
+    if (oauthError) {
+      throw new AppError(400, `Google OAuth error: ${oauthError}`);
+    }
 
     if (!code || !state) {
       throw new AppError(400, 'Missing code or state parameter');
     }
 
-    const userId = state as string;
+    // Resolve CSRF state token to userId
+    const userId = resolveState(state as string);
     await handleCallback(code as string, userId);
 
     // Redirect to frontend success page
     res.redirect(`${process.env.FRONTEND_URL}/dashboard/accounts?drive=connected`);
-  } catch (error) {
-    logger.error('Error in Drive OAuth callback:', error);
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard/accounts?drive=error`);
+  } catch (error: any) {
+    console.error('DRIVE CALLBACK ERROR:', error?.message || error);
+    console.error('DRIVE CALLBACK FULL ERROR:', JSON.stringify(error?.response?.data || error?.message || error));
+    const errorMsg = encodeURIComponent(error?.message || 'Unknown error');
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard/accounts?drive=error&drive_error=${errorMsg}`);
   }
 };
 
@@ -52,9 +59,13 @@ export const handleDriveCallback = async (req: AuthRequest, res: Response, next:
  */
 export const getDriveStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
+    if (!req.user) {
+      return res.json({ connected: false, account: null });
+    }
+
     const account = await prisma.socialAccount.findFirst({
       where: {
-        userId: req.user!.id,
+        userId: req.user.id,
         platform: 'GOOGLE_DRIVE',
         status: 'ACTIVE',
       },
@@ -71,6 +82,7 @@ export const getDriveStatus = async (req: AuthRequest, res: Response, next: Next
       account: account || null,
     });
   } catch (error) {
+    console.error('DRIVE STATUS ERROR:', error);
     next(error);
   }
 };

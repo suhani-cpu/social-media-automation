@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../config/database';
 import { config } from '../config/env';
 import { AppError } from '../middleware/error-handler.middleware';
+import { AuthRequest } from '../middleware/auth.middleware';
 import { z } from 'zod';
 
 const registerSchema = z.object({
@@ -97,6 +98,37 @@ export const login = async (
         name: user.name,
       },
       token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateProfileSchema = z.object({
+  name: z.string().min(2),
+});
+
+export const updateProfile = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name } = updateProfileSchema.parse(req.body);
+
+    const user = await prisma.user.update({
+      where: { id: req.user!.id },
+      data: { name },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
+
+    res.json({
+      message: 'Profile updated successfully',
+      user,
     });
   } catch (error) {
     next(error);

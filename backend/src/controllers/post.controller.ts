@@ -6,6 +6,7 @@ import { publishToInstagram } from '../services/social-media/instagram/client';
 import { publishToYouTube } from '../services/social-media/youtube/client';
 import { publishToFacebook } from '../services/social-media/facebook/client';
 import { getScheduledPostsSummary, reschedulePost } from '../services/scheduler';
+import { generateCaption } from '../services/caption/generator';
 import { z } from 'zod';
 
 const createPostSchema = z.object({
@@ -243,6 +244,38 @@ export const reschedulePostController = async (
       message: 'Post rescheduled successfully',
       scheduledFor: new Date(scheduledFor),
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const generateCaptionSchema = z.object({
+  videoTitle: z.string().min(1),
+  videoDescription: z.string().optional(),
+  platform: z.enum(['INSTAGRAM', 'FACEBOOK', 'YOUTUBE']),
+  language: z.enum(['ENGLISH', 'HINGLISH', 'HARYANVI', 'HINDI']),
+  tone: z.array(z.string()).optional(),
+  context: z.string().optional(),
+});
+
+export const generateCaptionController = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const data = generateCaptionSchema.parse(req.body);
+
+    const variations = await generateCaption({
+      videoTitle: data.videoTitle,
+      videoDescription: data.videoDescription,
+      platform: data.platform,
+      language: data.language,
+      tone: data.tone || ['engaging'],
+      context: data.context,
+    });
+
+    res.json({ variations });
   } catch (error) {
     next(error);
   }
