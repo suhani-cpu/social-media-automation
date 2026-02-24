@@ -29,7 +29,7 @@ describe('AuthStore', () => {
     const mockToken = 'mock-jwt-token';
 
     act(() => {
-      result.current.login(mockUser, mockToken);
+      result.current.setAuth(mockUser, mockToken);
     });
 
     expect(result.current.user).toEqual(mockUser);
@@ -49,7 +49,7 @@ describe('AuthStore', () => {
 
     // Login first
     act(() => {
-      result.current.login(mockUser, mockToken);
+      result.current.setAuth(mockUser, mockToken);
     });
 
     expect(result.current.isAuthenticated).toBe(true);

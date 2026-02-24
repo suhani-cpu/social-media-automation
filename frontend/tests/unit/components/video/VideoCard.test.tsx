@@ -22,11 +22,21 @@ jest.mock('../../../../src/components/ui/button', () => ({
 describe('VideoCard', () => {
   const mockVideo = {
     id: 'video-1',
+    userId: 'user-1',
     title: 'Test Video',
     status: 'READY' as const,
     language: 'ENGLISH' as const,
     thumbnailUrl: 'https://example.com/thumbnail.jpg',
     rawVideoUrl: 'https://example.com/video.mp4',
+    instagramReelUrl: 'https://example.com/instagram-reel.mp4',
+    instagramFeedUrl: 'https://example.com/instagram-feed.mp4',
+    youtubeShortsUrl: 'https://example.com/youtube-short.mp4',
+    youtubeVideoUrl: 'https://example.com/youtube-video.mp4',
+    youtubeSquareUrl: 'https://example.com/youtube-square.mp4',
+    facebookSquareUrl: 'https://example.com/facebook-square.mp4',
+    facebookLandscapeUrl: 'https://example.com/facebook-landscape.mp4',
+    duration: 120,
+    fileSize: 10485760,
     processedVideos: {
       instagramReel: 'https://example.com/instagram-reel.mp4',
       instagramFeed: 'https://example.com/instagram-feed.mp4',
