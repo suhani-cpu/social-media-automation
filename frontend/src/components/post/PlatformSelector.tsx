@@ -196,9 +196,7 @@ export function PlatformSelector({ selections, onSelectionChange }: PlatformSele
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (isSelected) {
-                            togglePlatform(platform);
-                          }
+                          togglePlatform(platform);
                         }}
                       >
                         {isSelected && <CheckCircle className="h-5 w-5 text-white" />}

@@ -143,7 +143,7 @@ export class PostsService implements OnModuleInit {
   }
 
   /**
-   * Publish a post — kicks off background upload and returns immediately.
+   * Publish a post — runs synchronously (serverless can't do background tasks).
    */
   async publish(userId: string, postId: string) {
     const post = await this.prisma.post.findFirst({
@@ -172,19 +172,16 @@ export class PostsService implements OnModuleInit {
       data: { status: 'PUBLISHING' },
     });
 
-    // Initialize progress
-    this.setProgress(post.id, {
-      stage: 'downloading',
-      percent: 0,
-      message: 'Starting publish...',
-    });
+    // Run publish synchronously (Vercel serverless kills background tasks)
+    await this.executePublish(post.id, post, post.video!, post.account!);
 
-    // Run publish in background (don't await)
-    this.executePublish(post.id, post, post.video!, post.account!).catch((err) => {
-      this.logger.error(`Background publish failed for post ${post.id}:`, err);
-    });
-
-    return { message: 'Publishing started', postId: post.id };
+    // Check final status
+    const updated = await this.prisma.post.findFirst({ where: { id: post.id } });
+    if (updated?.status === 'PUBLISHED') {
+      return { message: 'Published successfully', postId: post.id, platformUrl: updated.platformUrl };
+    } else {
+      return { message: updated?.errorMessage || 'Publishing failed', postId: post.id, status: updated?.status };
+    }
   }
 
   /**
@@ -220,9 +217,9 @@ export class PostsService implements OnModuleInit {
         throw new BadRequestException('Post has no associated social account');
       }
 
-      // If video has no rawVideoUrl but has a Drive file ID, download from Drive first
+      // If video has a Drive file ID, always download fresh (serverless /tmp is ephemeral)
       const metadata = video.metadata as Record<string, any> | null;
-      if (!video.rawVideoUrl && metadata?.driveFileId) {
+      if (metadata?.driveFileId) {
         this.setProgress(postId, {
           stage: 'downloading',
           percent: 0,
@@ -427,18 +424,15 @@ export class PostsService implements OnModuleInit {
       data: { status: 'PUBLISHING', errorMessage: null },
     });
 
-    this.setProgress(post.id, {
-      stage: 'downloading',
-      percent: 0,
-      message: 'Retrying publish...',
-    });
+    // Run synchronously (Vercel serverless kills background tasks)
+    await this.executePublish(post.id, post, post.video!, post.account!);
 
-    this.executePublish(post.id, post, post.video!, post.account!).catch((err) => {
-      this.logger.error(`Retry publish failed for post ${post.id}:`, err);
-    });
-
-    this.logger.log(`Retry publish started for post ${postId}`);
-    return { message: 'Retry started', postId: post.id };
+    const updated = await this.prisma.post.findFirst({ where: { id: post.id } });
+    if (updated?.status === 'PUBLISHED') {
+      return { message: 'Published successfully', postId: post.id, platformUrl: updated.platformUrl };
+    } else {
+      return { message: updated?.errorMessage || 'Retry failed', postId: post.id, status: updated?.status };
+    }
   }
 
   /**

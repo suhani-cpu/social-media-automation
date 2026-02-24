@@ -226,8 +226,10 @@ export class YouTubeService {
       }
 
       // ── Step 2: Convert to MP4 if needed ──────────────────────────────
+      // YouTube accepts MOV, MP4, AVI, WMV, WebM natively — only convert uncommon formats
       const fileExt = path.extname(localVideoPath).toLowerCase();
-      if (fileExt && fileExt !== '.mp4') {
+      const youtubeNativeFormats = ['.mp4', '.mov', '.avi', '.wmv', '.webm', '.flv', '.3gp', '.mpg', '.mpeg'];
+      if (fileExt && !youtubeNativeFormats.includes(fileExt)) {
         onProgress?.({ stage: 'converting', percent: 0, message: `Converting ${fileExt} to MP4...` });
 
         this.logger.log('Converting video to MP4 for YouTube upload', { fileExt, localVideoPath });

@@ -51,6 +51,12 @@
 }
 
 @layer base {
+  :root {
+    --youtube-red: 0 100% 50%;
+    --instagram-pink: 330 100% 50%;
+    --facebook-blue: 220 100% 50%;
+  }
+
   * {
     @apply border-border;
   }
@@ -75,5 +81,37 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(0 100% 45%);
+  }
+}
+
+@layer utilities {
+  .hover-scale {
+    @apply transition-transform duration-150;
+  }
+  .hover-scale:hover {
+    transform: scale(1.01);
+  }
+
+  .youtube-gradient {
+    background: linear-gradient(135deg, hsl(0 100% 50%), hsl(0 100% 35%));
+  }
+  .instagram-gradient {
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  }
+  .facebook-gradient {
+    background: linear-gradient(135deg, hsl(220 100% 50%), hsl(220 100% 35%));
+  }
+
+  .youtube-glow {
+    border-color: hsl(0 100% 50%);
+    box-shadow: 0 0 12px hsl(0 100% 50% / 0.3);
+  }
+  .instagram-glow {
+    border-color: #dc2743;
+    box-shadow: 0 0 12px rgba(220, 39, 67, 0.3);
+  }
+  .facebook-glow {
+    border-color: hsl(220 100% 50%);
+    box-shadow: 0 0 12px hsl(220 100% 50% / 0.3);
   }
 }
