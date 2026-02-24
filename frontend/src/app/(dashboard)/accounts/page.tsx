@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { accountsApi } from '@/lib/api/accounts';
 import { SocialAccount } from '@/lib/types/api';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,14 @@ const platformColors: PlatformIcon = {
 };
 
 export default function AccountsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>
+      <AccountsPageContent />
+    </Suspense>
+  );
+}
+
+function AccountsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
