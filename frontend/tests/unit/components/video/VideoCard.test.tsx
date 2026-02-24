@@ -37,6 +37,7 @@ describe('VideoCard', () => {
     facebookLandscapeUrl: 'https://example.com/facebook-landscape.mp4',
     duration: 120,
     fileSize: 10485760,
+    errorMessage: '',
     processedVideos: {
       instagramReel: 'https://example.com/instagram-reel.mp4',
       instagramFeed: 'https://example.com/instagram-feed.mp4',

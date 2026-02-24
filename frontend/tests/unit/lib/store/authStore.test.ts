@@ -25,6 +25,7 @@ describe('AuthStore', () => {
       id: 'user-id',
       name: 'Test User',
       email: 'test@example.com',
+      createdAt: '2024-01-01T00:00:00Z',
     };
     const mockToken = 'mock-jwt-token';
 
@@ -44,6 +45,7 @@ describe('AuthStore', () => {
       id: 'user-id',
       name: 'Test User',
       email: 'test@example.com',
+      createdAt: '2024-01-01T00:00:00Z',
     };
     const mockToken = 'mock-jwt-token';
 
@@ -71,11 +73,12 @@ describe('AuthStore', () => {
       id: 'user-id',
       name: 'Test User',
       email: 'test@example.com',
+      createdAt: '2024-01-01T00:00:00Z',
     };
     const mockToken = 'mock-jwt-token';
 
     act(() => {
-      result1.current.login(mockUser, mockToken);
+      result1.current.setAuth(mockUser, mockToken);
     });
 
     // Create new hook instance
