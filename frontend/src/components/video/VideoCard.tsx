@@ -33,7 +33,7 @@ export function VideoCard({ video, onDelete }: VideoCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasError, setHasError] = useState(false);
 
-  const isReady = video.status === 'READY' && video.rawVideoUrl;
+  const isReady = video.status === 'READY';
 
   const formatSize = (bytes: number | null | undefined) => {
     if (!bytes) return '';

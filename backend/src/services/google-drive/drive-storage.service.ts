@@ -32,7 +32,7 @@ const VIDEO_MIME_TYPES = [
 ];
 
 export class DriveStorageService {
-  private drive: drive_v3.Drive;
+  private drive!: drive_v3.Drive;
 
   constructor(private userId: string) {}
 
@@ -68,11 +68,11 @@ export class DriveStorageService {
         id: file.id!,
         name: file.name!,
         mimeType: file.mimeType!,
-        size: file.size,
-        createdTime: file.createdTime || undefined,
-        modifiedTime: file.modifiedTime || undefined,
-        webViewLink: file.webViewLink || undefined,
-        thumbnailLink: file.thumbnailLink || undefined,
+        size: file.size ?? undefined,
+        createdTime: file.createdTime ?? undefined,
+        modifiedTime: file.modifiedTime ?? undefined,
+        webViewLink: file.webViewLink ?? undefined,
+        thumbnailLink: file.thumbnailLink ?? undefined,
         isFolder: file.mimeType === 'application/vnd.google-apps.folder',
       }));
 

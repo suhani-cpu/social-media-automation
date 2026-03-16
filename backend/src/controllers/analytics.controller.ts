@@ -111,7 +111,7 @@ export const getPostAnalytics = async (
         likes: latest.likes,
         comments: latest.comments,
         shares: latest.shares,
-        engagementRate: latest.engagementRate,
+        engagement: latest.engagement,
         metricsDate: latest.metricsDate,
       },
       history: analytics.map((a) => ({
@@ -119,7 +119,7 @@ export const getPostAnalytics = async (
         likes: a.likes,
         comments: a.comments,
         shares: a.shares,
-        engagementRate: a.engagementRate,
+        engagement: a.engagement,
         date: a.metricsDate,
       })),
     });
@@ -228,7 +228,7 @@ export const getTopPerformingPosts = async (
           likes: post.analytics[0].likes,
           comments: post.analytics[0].comments,
           shares: post.analytics[0].shares,
-          engagementRate: post.analytics[0].engagementRate,
+          engagement: post.analytics[0].engagement,
           metricsDate: post.analytics[0].metricsDate,
         },
       }))

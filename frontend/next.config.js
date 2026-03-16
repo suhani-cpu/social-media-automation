@@ -51,7 +51,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; frame-ancestors *; connect-src 'self' http://localhost:3000 http://localhost:3001 https://*.vercel.app https://*.railway.app https://*.onrender.com; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;",
+            value: "default-src 'self'; frame-ancestors *; connect-src 'self' http://localhost:3000 http://localhost:3001 https://*.vercel.app https://*.railway.app https://*.onrender.com; media-src 'self' http://localhost:3000 https://*.vercel.app blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;",
           },
         ],
       },

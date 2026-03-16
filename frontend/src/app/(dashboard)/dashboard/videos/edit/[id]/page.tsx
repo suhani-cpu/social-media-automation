@@ -106,11 +106,38 @@ export default function VideoEditPage() {
       </div>
 
       {/* Video Editor */}
-      <VideoEditor
-        videoUrl={getStreamUrl(videoId)}
-        videoTitle={video.title}
-        onClose={() => router.push('/dashboard/videos')}
-      />
+      {video.sourceType === 'STAGE_OTT' ? (
+        <div className="space-y-6">
+          <div className="rounded-lg border border-[#1a1a1a] bg-[#111] p-6">
+            <h2 className="text-lg font-semibold text-white mb-2">Stage OTT Content</h2>
+            <p className="text-neutral-500 text-sm mb-4">
+              This content was imported from Stage OTT. Video preview and clipping are not available for Stage OTT imports.
+            </p>
+            {video.thumbnailUrl && (
+              <div className="relative w-full max-w-md mx-auto aspect-square rounded-lg overflow-hidden bg-black">
+                <img
+                  src={video.thumbnailUrl}
+                  alt={video.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="mt-4 space-y-2 text-sm text-neutral-400">
+              {video.duration && <p>Duration: {Math.floor(video.duration / 60)}m {video.duration % 60}s</p>}
+              {video.stageOttData?.dialect && <p>Dialect: {video.stageOttData.dialect}</p>}
+              {video.stageOttData?.contentType && <p>Type: {video.stageOttData.contentType}</p>}
+              {video.stageOttData?.format && <p>Format: {video.stageOttData.format}</p>}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <VideoEditor
+          videoUrl={getStreamUrl(videoId)}
+          videoId={videoId}
+          videoTitle={video.title}
+          onClose={() => router.push('/dashboard/videos')}
+        />
+      )}
     </div>
   );
 }

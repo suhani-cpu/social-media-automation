@@ -130,7 +130,7 @@ export const deleteVideo = async (
     const filesToDelete = [
       video.rawVideoUrl,
       video.instagramReelUrl,
-      video.youtubeShortUrl,
+      video.youtubeShortsUrl,
       video.youtubeVideoUrl,
       video.facebookSquareUrl,
       video.facebookLandscapeUrl,

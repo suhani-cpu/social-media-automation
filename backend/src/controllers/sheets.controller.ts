@@ -249,7 +249,7 @@ export const importFromSheet = async (
             success: true,
             title: video.title,
             videoId: videoRecord.id,
-            source: videoRecord.metadata?.driveFileId ? 'drive' : 'youtube',
+            source: (videoRecord.metadata as any)?.driveFileId ? 'drive' : 'youtube',
             format: '9:16',
             postCreated,
             postId,

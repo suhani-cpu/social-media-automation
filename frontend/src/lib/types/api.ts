@@ -53,6 +53,10 @@ export interface Video {
   size?: number;
   status: VideoStatus;
   errorMessage: string | null;
+  sourceType?: string;
+  stageOttId?: string | null;
+  stageOttData?: Record<string, any> | null;
+  metadata?: Record<string, any> | null;
   createdAt: string;
   updatedAt: string;
 }

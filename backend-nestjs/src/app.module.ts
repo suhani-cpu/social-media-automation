@@ -20,6 +20,7 @@ import { SocialMediaModule } from './social-media/social-media.module';
 import { VideoProcessingModule } from './video-processing/video-processing.module';
 import { VideoCuttingModule } from './video-cutting/video-cutting.module';
 import { CaptionModule } from './caption/caption.module';
+import { StageOttModule } from './stage-ott/stage-ott.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -80,6 +81,7 @@ import { HealthController } from './health.controller';
     ClipsModule,
     SheetsModule,
     SchedulerModule,
+    StageOttModule,
   ],
   controllers: [HealthController],
 })

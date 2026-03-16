@@ -17,15 +17,18 @@ import apiClient from '@/lib/api/client';
 
 interface VideoEditorProps {
   videoUrl: string;
+  videoId: string;
   videoTitle: string;
   onClose?: () => void;
 }
 
-export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps) {
+export function VideoEditor({ videoUrl, videoId, videoTitle, onClose }: VideoEditorProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [videoError, setVideoError] = useState(false);
+  const [videoLoading, setVideoLoading] = useState(true);
 
   // Clip settings
   const [startTime, setStartTime] = useState(0);
@@ -49,7 +52,14 @@ export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps)
       const videoDuration = videoRef.current.duration;
       setDuration(videoDuration);
       setEndTime(Math.min(videoDuration, 60)); // Default to first 60 seconds
+      setVideoLoading(false);
+      setVideoError(false);
     }
+  };
+
+  const handleVideoError = () => {
+    setVideoError(true);
+    setVideoLoading(false);
   };
 
   const handleTimeUpdate = () => {
@@ -100,21 +110,21 @@ export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps)
       const response = await apiClient.post(
         '/clip',
         {
-          videoUrl,
-          startSeconds: startTime,
-          endSeconds: endTime,
-          framing: {
-            aspectRatio,
+          videoId,
+          startTime,
+          endTime,
+          format: aspectRatio,
+          overlay: {
             paddingColor,
             topCaption,
             bottomCaption,
             captionFontSize,
             captionColor,
-            includeLogo,
           },
         },
         {
           responseType: 'blob',
+          timeout: 300000, // 5 min timeout for video processing
         }
       );
 
@@ -147,15 +157,49 @@ export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps)
         </CardHeader>
         <CardContent>
           <div className="relative bg-black rounded-lg overflow-hidden">
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="w-full"
-              onLoadedMetadata={handleLoadedMetadata}
-              onTimeUpdate={handleTimeUpdate}
-            />
+            {videoError ? (
+              <div className="w-full aspect-video flex items-center justify-center bg-black">
+                <div className="text-center p-6">
+                  <p className="text-red-400 font-medium mb-2">Failed to load video</p>
+                  <p className="text-neutral-500 text-sm">The video file could not be loaded. It may still be processing or the source is unavailable.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => {
+                      setVideoError(false);
+                      setVideoLoading(true);
+                      if (videoRef.current) {
+                        videoRef.current.load();
+                      }
+                    }}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                className="w-full"
+                preload="metadata"
+                onLoadedMetadata={handleLoadedMetadata}
+                onTimeUpdate={handleTimeUpdate}
+                onError={handleVideoError}
+                onCanPlay={() => setVideoLoading(false)}
+              />
+            )}
+
+            {/* Loading indicator */}
+            {videoLoading && !videoError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                <p className="text-neutral-400 text-sm">Loading video...</p>
+              </div>
+            )}
 
             {/* Play/Pause Overlay */}
+            {!videoError && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Button
                 variant="ghost"
@@ -166,6 +210,7 @@ export function VideoEditor({ videoUrl, videoTitle, onClose }: VideoEditorProps)
                 {isPlaying ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
               </Button>
             </div>
+            )}
 
             {/* Timeline */}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">

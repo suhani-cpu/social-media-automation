@@ -1,8 +1,8 @@
 import { prisma } from '../../config/database';
 import { logger } from '../../utils/logger';
-import { fetchInstagramAnalytics } from '../social-media/instagram/analytics';
-import { fetchYouTubeAnalytics } from '../social-media/youtube/analytics';
-import { fetchFacebookAnalytics } from '../social-media/facebook/analytics';
+import { getInstagramMediaInsights } from '../social-media/instagram/analytics';
+import { getYouTubeAnalytics } from '../social-media/youtube/analytics';
+import { getFacebookInsights } from '../social-media/facebook/analytics';
 
 export interface AnalyticsData {
   views: number;
@@ -40,38 +40,34 @@ export async function syncPostAnalytics(postId: string): Promise<void> {
 
     switch (post.platform) {
       case 'INSTAGRAM':
-        analyticsData = await fetchInstagramAnalytics(post.account, post.platformPostId);
+        analyticsData = await getInstagramMediaInsights(post.platformPostId, post.account.accessToken);
         break;
 
       case 'YOUTUBE':
-        analyticsData = await fetchYouTubeAnalytics(post.account, post.platformPostId);
+        analyticsData = await getYouTubeAnalytics(post.platformPostId, post.account.id);
         break;
 
       case 'FACEBOOK':
-        analyticsData = await fetchFacebookAnalytics(post.account, post.platformPostId);
+        analyticsData = await getFacebookInsights(post.platformPostId, post.account.accessToken);
         break;
 
       default:
         throw new Error(`Unsupported platform: ${post.platform}`);
     }
 
-    // Calculate engagement rate
-    const engagementRate = calculateEngagementRate(
-      analyticsData.likes,
-      analyticsData.comments,
-      analyticsData.shares,
-      analyticsData.views
-    );
+    // Calculate engagement
+    const engagement = analyticsData.likes + analyticsData.comments + analyticsData.shares;
 
     // Store analytics data
     await prisma.analytics.create({
       data: {
         postId: post.id,
+        accountId: post.accountId,
         views: analyticsData.views,
         likes: analyticsData.likes,
         comments: analyticsData.comments,
         shares: analyticsData.shares,
-        engagementRate,
+        engagement,
         metricsDate: new Date(),
       },
     });
@@ -82,7 +78,7 @@ export async function syncPostAnalytics(postId: string): Promise<void> {
       likes: analyticsData.likes,
       comments: analyticsData.comments,
       shares: analyticsData.shares,
-      engagementRate,
+      engagement,
     });
   } catch (error) {
     logger.error(`Failed to sync analytics for post ${postId}:`, {
@@ -110,24 +106,6 @@ export async function syncMultiplePostsAnalytics(postIds: string[]): Promise<voi
     succeeded,
     failed,
   });
-}
-
-/**
- * Calculate engagement rate
- * Formula: (likes + comments + shares) / views * 100
- */
-function calculateEngagementRate(
-  likes: number,
-  comments: number,
-  shares: number,
-  views: number
-): number {
-  if (views === 0) return 0;
-
-  const totalEngagements = likes + comments + shares;
-  const rate = (totalEngagements / views) * 100;
-
-  return Math.round(rate * 100) / 100; // Round to 2 decimal places
 }
 
 /**
@@ -165,35 +143,37 @@ export async function getAnalyticsSummary(
       likes: acc.likes + curr.likes,
       comments: acc.comments + curr.comments,
       shares: acc.shares + curr.shares,
+      engagement: acc.engagement + curr.engagement,
       posts: acc.posts + 1,
     }),
-    { views: 0, likes: 0, comments: 0, shares: 0, posts: 0 }
+    { views: 0, likes: 0, comments: 0, shares: 0, engagement: 0, posts: 0 }
   );
 
-  // Calculate average engagement rate
-  const avgEngagementRate =
+  // Calculate average engagement
+  const avgEngagement =
     analytics.length > 0
-      ? analytics.reduce((acc, curr) => acc + curr.engagementRate, 0) / analytics.length
+      ? analytics.reduce((acc, curr) => acc + curr.engagement, 0) / analytics.length
       : 0;
 
   // Group by platform
   const byPlatform = analytics.reduce((acc, curr) => {
     const platform = curr.post.platform;
     if (!acc[platform]) {
-      acc[platform] = { views: 0, likes: 0, comments: 0, shares: 0, posts: 0 };
+      acc[platform] = { views: 0, likes: 0, comments: 0, shares: 0, engagement: 0, posts: 0 };
     }
     acc[platform].views += curr.views;
     acc[platform].likes += curr.likes;
     acc[platform].comments += curr.comments;
     acc[platform].shares += curr.shares;
+    acc[platform].engagement += curr.engagement;
     acc[platform].posts += 1;
     return acc;
-  }, {} as Record<string, { views: number; likes: number; comments: number; shares: number; posts: number }>);
+  }, {} as Record<string, { views: number; likes: number; comments: number; shares: number; engagement: number; posts: number }>);
 
   return {
     totals: {
       ...totals,
-      avgEngagementRate: Math.round(avgEngagementRate * 100) / 100,
+      avgEngagement: Math.round(avgEngagement * 100) / 100,
     },
     byPlatform,
     timeline: analytics.map((a) => ({
@@ -202,7 +182,7 @@ export async function getAnalyticsSummary(
       likes: a.likes,
       comments: a.comments,
       shares: a.shares,
-      engagementRate: a.engagementRate,
+      engagement: a.engagement,
       platform: a.post.platform,
     })),
   };

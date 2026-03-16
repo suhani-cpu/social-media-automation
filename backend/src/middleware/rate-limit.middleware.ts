@@ -1,6 +1,14 @@
 import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
 
+declare module 'express' {
+  interface Request {
+    rateLimit?: {
+      resetTime: Date | undefined;
+    };
+  }
+}
+
 /**
  * Skip rate limiting in test environment or when explicitly disabled
  */

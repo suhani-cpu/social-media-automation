@@ -1,18 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store/authStore';
 import { apiClient } from '@/lib/api/client';
 
 const AUTO_LOGIN_EMAIL = 'suhani@stage.in';
-const AUTO_LOGIN_PASSWORD = 'Stage1234';
+const AUTO_LOGIN_PASSWORD = '123456';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, setAuth } = useAuthStore();
+  const router = useRouter();
+  const { isAuthenticated, setAuth, _hasHydrated } = useAuthStore();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (!_hasHydrated) return;
+
     const token = localStorage.getItem('token');
+    
     if (isAuthenticated || token) {
       setReady(true);
       return;
@@ -28,12 +33,12 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         setReady(true);
       })
       .catch(() => {
-        // If auto-login fails, still show the page
-        setReady(true);
+        // If auto-login fails, redirect to login
+        router.push('/login');
       });
-  }, [isAuthenticated, setAuth]);
+  }, [isAuthenticated, setAuth, _hasHydrated, router]);
 
-  if (!ready) {
+  if (!_hasHydrated || !ready) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-red-600 border-t-transparent" />

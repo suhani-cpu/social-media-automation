@@ -46,7 +46,7 @@ export async function getYouTubeAnalytics(
       comments: parseInt(stats?.commentCount || '0'),
       shares: 0, // Not available in basic API
       favorites: parseInt(stats?.favoriteCount || '0'),
-      duration: contentDetails?.duration,
+      duration: contentDetails?.duration ?? undefined,
     };
 
     logger.info('YouTube analytics fetched', {

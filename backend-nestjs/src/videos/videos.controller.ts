@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Delete, Param, Body, Res, UseGuards, UseInterceptors, UploadedFile, BadRequestException, NotFoundException } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, Get, Post, Delete, Param, Body, Req, Res, UseGuards, UseInterceptors, UploadedFile, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser, CurrentUserPayload } from '../common/decorators/current-user.decorator';
 import { VideosService } from './videos.service';
+import { DriveService } from '../drive/drive.service';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { createReadStream, existsSync, statSync } from 'fs';
@@ -16,10 +17,23 @@ const videoStorage = diskStorage({
   },
 });
 
+const MIME_TYPES: Record<string, string> = {
+  '.mp4': 'video/mp4',
+  '.mov': 'video/quicktime',
+  '.avi': 'video/x-msvideo',
+  '.webm': 'video/webm',
+  '.mkv': 'video/x-matroska',
+};
+
 @Controller('videos')
 @UseGuards(JwtAuthGuard)
 export class VideosController {
-  constructor(private readonly videosService: VideosService) {}
+  private readonly logger = new Logger(VideosController.name);
+
+  constructor(
+    private readonly videosService: VideosService,
+    private readonly driveService: DriveService,
+  ) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('video', {
@@ -51,34 +65,95 @@ export class VideosController {
   async stream(
     @CurrentUser() user: CurrentUserPayload,
     @Param('id') id: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     const { video } = await this.videosService.findOne(user.id, id);
     const filePath = video.rawVideoUrl;
+    const metadata = video.metadata as Record<string, any> | null;
+    const driveFileId = metadata?.driveFileId as string | undefined;
 
-    if (!filePath || !existsSync(filePath)) {
-      throw new NotFoundException('Video file not found');
+    // Case 1: Local file exists (local dev or recently uploaded)
+    if (filePath && existsSync(filePath)) {
+      return this.streamLocalFile(filePath, req, res);
     }
 
+    // Case 2: Google Drive import — proxy stream from Drive
+    if (driveFileId) {
+      return this.streamFromDrive(user, driveFileId, metadata, res);
+    }
+
+    throw new NotFoundException('Video file not found. The file may have been removed from temporary storage.');
+  }
+
+  private streamLocalFile(filePath: string, req: Request, res: Response) {
     const stat = statSync(filePath);
+    const fileSize = stat.size;
     const ext = extname(filePath).toLowerCase();
-    const mimeTypes: Record<string, string> = {
-      '.mp4': 'video/mp4',
-      '.mov': 'video/quicktime',
-      '.avi': 'video/x-msvideo',
-      '.webm': 'video/webm',
-      '.mkv': 'video/x-matroska',
-    };
+    const contentType = MIME_TYPES[ext] || 'video/mp4';
+    const range = req.headers.range;
 
-    res.set({
-      'Content-Type': mimeTypes[ext] || 'video/mp4',
-      'Content-Length': stat.size,
-      'Accept-Ranges': 'bytes',
-      'Cache-Control': 'no-cache',
-    });
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = end - start + 1;
 
-    const stream = createReadStream(filePath);
-    stream.pipe(res);
+      res.status(206).set({
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': contentType,
+        'Cache-Control': 'no-cache',
+      });
+
+      createReadStream(filePath, { start, end }).pipe(res);
+    } else {
+      res.set({
+        'Content-Type': contentType,
+        'Content-Length': fileSize,
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'no-cache',
+      });
+
+      createReadStream(filePath).pipe(res);
+    }
+  }
+
+  private async streamFromDrive(
+    user: CurrentUserPayload,
+    driveFileId: string,
+    metadata: Record<string, any> | null,
+    res: Response,
+  ) {
+    try {
+      this.logger.log(`Streaming video from Google Drive: ${driveFileId}`);
+
+      // Download to temp first then stream (Drive API doesn't support range requests easily)
+      const tempPath = await this.driveService.downloadToTemp(
+        user.id,
+        driveFileId,
+        metadata?.driveFileName,
+      );
+
+      const stat = statSync(tempPath);
+      const driveMimeType = metadata?.driveMimeType as string | undefined;
+      const ext = extname(metadata?.driveFileName || '').toLowerCase();
+      const contentType = driveMimeType || MIME_TYPES[ext] || 'video/mp4';
+
+      res.set({
+        'Content-Type': contentType,
+        'Content-Length': stat.size,
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'no-cache',
+      });
+
+      const stream = createReadStream(tempPath);
+      stream.pipe(res);
+    } catch (error: any) {
+      this.logger.error(`Failed to stream from Drive: ${error.message}`);
+      throw new NotFoundException('Failed to stream video from Google Drive. Please reconnect your Drive account.');
+    }
   }
 
   @Delete(':id')

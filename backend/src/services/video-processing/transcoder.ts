@@ -7,6 +7,7 @@ import { storage } from '../storage';
 import { validateVideo, getVideoMetadata, transcodeVideo } from './ffmpeg';
 import { generateStandardThumbnails } from './thumbnail';
 import { FORMATS, getAllFormatNames, VIDEO_URL_FIELDS } from './formats';
+import { autoPublishVideo } from '../scheduler/auto-publish';
 
 export interface ProcessVideoOptions {
   videoId: string;
@@ -123,14 +124,7 @@ export async function processVideo(options: ProcessVideoOptions): Promise<void> 
 
       // Upload to storage
       const s3Path = `videos/processed/${video.userId}/${videoId}/${outputFilename}`;
-      const url = await storage.upload(outputPath, s3Path, {
-        contentType: 'video/mp4',
-        metadata: {
-          videoId,
-          userId: video.userId,
-          format: formatName,
-        },
-      });
+      const url = await storage.upload(outputPath, s3Path);
 
       processedVideos[formatName] = url;
 
@@ -158,14 +152,7 @@ export async function processVideo(options: ProcessVideoOptions): Promise<void> 
 
     for (const thumbnail of thumbnails) {
       const s3Path = `videos/thumbnails/${video.userId}/${videoId}/${thumbnail.filename}`;
-      const url = await storage.upload(thumbnail.path, s3Path, {
-        contentType: 'image/jpeg',
-        metadata: {
-          videoId,
-          userId: video.userId,
-          timestamp: thumbnail.timestamp.toString(),
-        },
-      });
+      const url = await storage.upload(thumbnail.path, s3Path);
 
       thumbnailUrls.push(url);
 
@@ -182,13 +169,7 @@ export async function processVideo(options: ProcessVideoOptions): Promise<void> 
 
     if (rawVideoUrl?.startsWith('file://') || !rawVideoUrl?.startsWith('http')) {
       const s3Path = `videos/raw/${video.userId}/${videoId}/original.mp4`;
-      rawVideoUrl = await storage.upload(rawVideoPath, s3Path, {
-        contentType: 'video/mp4',
-        metadata: {
-          videoId,
-          userId: video.userId,
-        },
-      });
+      rawVideoUrl = await storage.upload(rawVideoPath, s3Path);
 
       logger.info('Raw video uploaded to persistent storage', { rawVideoUrl });
     }
@@ -219,6 +200,12 @@ export async function processVideo(options: ProcessVideoOptions): Promise<void> 
       videoId,
       processedFormats: formatNames.length,
       thumbnails: thumbnailUrls.length,
+    });
+
+    // Auto-publish any draft posts for this video
+    logger.info(`Triggering auto-publish for video ${videoId}`);
+    autoPublishVideo(videoId).catch((err) => {
+      logger.error('Auto-publish failed:', err);
     });
 
     onProgress?.('complete', 100);

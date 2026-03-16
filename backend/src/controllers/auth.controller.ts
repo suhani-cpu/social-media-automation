@@ -51,7 +51,7 @@ export const register = async (
     });
 
     const token = jwt.sign({ userId: user.id }, config.JWT_SECRET, {
-      expiresIn: config.JWT_EXPIRY,
+      expiresIn: config.JWT_EXPIRY as jwt.SignOptions['expiresIn'],
     });
 
     res.status(201).json({
@@ -87,7 +87,7 @@ export const login = async (
     }
 
     const token = jwt.sign({ userId: user.id }, config.JWT_SECRET, {
-      expiresIn: config.JWT_EXPIRY,
+      expiresIn: config.JWT_EXPIRY as jwt.SignOptions['expiresIn'],
     });
 
     res.json({

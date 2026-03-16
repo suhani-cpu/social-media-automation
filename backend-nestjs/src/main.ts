@@ -24,8 +24,11 @@ async function createApp() {
   // Global prefix
   app.setGlobalPrefix('api');
 
-  // Security
-  app.use(helmet());
+  // Security — allow cross-origin resource loading for video streaming
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginEmbedderPolicy: false,
+  }));
 
   // CORS — allow all origins when ALLOW_ALL_ORIGINS=true (for CMS embedding)
   const allowAllOrigins = configService.get<string>('ALLOW_ALL_ORIGINS', 'false') === 'true';

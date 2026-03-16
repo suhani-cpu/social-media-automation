@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Upload, Video as VideoIcon, Cloud, Table, Rocket } from 'lucide-react';
+import { Upload, Video as VideoIcon, Cloud, Table, Rocket, Tv } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video/VideoCard';
 import { Toast, ToastContainer } from '@/components/ui/toast';
@@ -81,6 +81,15 @@ export default function VideosPage() {
                 <Rocket className="mr-2 h-4 w-4" />
                 Auto Post All
               </Button>
+              <Link href="/dashboard/videos/stage-ott">
+                <Button
+                  variant="outline"
+                  className="border-[#1a1a1a] text-neutral-300 hover:bg-[#1a1a1a] hover:text-white"
+                >
+                  <Tv className="mr-2 h-4 w-4" />
+                  Stage OTT
+                </Button>
+              </Link>
               <Button
                 onClick={() => setIsSheetModalOpen(true)}
                 variant="outline"

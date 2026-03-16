@@ -5,12 +5,23 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { DriveService } from '../drive/drive.service';
 import * as ffmpeg from 'fluent-ffmpeg';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as fs from 'fs';
 
-const TEMP_DIR = path.join(process.cwd(), 'temp');
+// Configure ffmpeg-static binary path for serverless
+try {
+  const ffmpegStatic = require('ffmpeg-static');
+  if (ffmpegStatic) {
+    (ffmpeg as any).setFfmpegPath(ffmpegStatic);
+  }
+} catch {
+  // ffmpeg-static not available, fall back to system ffmpeg
+}
+
+const TEMP_DIR = '/tmp/clips';
 const MAX_DURATION = 600; // 10 minutes in seconds
 const MAX_CONCURRENT = 5;
 const PROCESS_TIMEOUT = 5 * 60 * 1000; // 5 minutes in ms
@@ -56,7 +67,10 @@ export class ClipsService {
   private activeProcesses = 0;
   private readonly queue: Array<() => void> = [];
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly driveService: DriveService,
+  ) {}
 
   // ---------------------------------------------------------------------------
   // Public API
@@ -88,15 +102,36 @@ export class ClipsService {
       throw new NotFoundException('Video not found');
     }
 
-    const inputUrl = video.rawVideoUrl || video.sourceUrl;
-    if (!inputUrl) {
-      throw new BadRequestException(
-        'Video has no source URL available for clipping',
-      );
+    // Resolve input file: local path, or download from Google Drive
+    let inputUrl = video.rawVideoUrl || video.sourceUrl;
+    let downloadedFromDrive = false;
+    const metadata = video.metadata as Record<string, any> | null;
+
+    if (!inputUrl || !fs.existsSync(inputUrl)) {
+      // Try Google Drive
+      const driveFileId = metadata?.driveFileId as string | undefined;
+      if (driveFileId) {
+        this.logger.log(`Downloading video from Drive for clipping: ${driveFileId}`);
+        inputUrl = await this.driveService.downloadToTemp(
+          userId,
+          driveFileId,
+          metadata?.driveFileName,
+        );
+        downloadedFromDrive = true;
+      } else {
+        throw new BadRequestException(
+          'Video file not available for clipping. The file may have been removed from temporary storage.',
+        );
+      }
     }
 
     // Step 1 -- Cut the clip
     const clippedPath = await this.cutClip(inputUrl, startTime, duration);
+
+    // Clean up Drive download after clipping
+    if (downloadedFromDrive) {
+      this.deleteTempFile(inputUrl);
+    }
 
     // Step 2 -- Apply framing / overlay if requested
     let outputPath = clippedPath;

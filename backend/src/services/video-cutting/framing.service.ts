@@ -258,8 +258,8 @@ export function getVideoDimensions(inputPath: string): Promise<VideoDimensions> 
       }
 
       resolve({
-        width: videoStream.width,
-        height: videoStream.height,
+        width: videoStream.width ?? 0,
+        height: videoStream.height ?? 0,
         duration: metadata.format.duration || 0
       });
     });

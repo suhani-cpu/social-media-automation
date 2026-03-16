@@ -50,17 +50,17 @@ export async function checkAndPublishScheduledPosts(): Promise<void> {
     for (const post of scheduledPosts) {
       try {
         // Validate video is ready
-        if (post.video.status !== 'READY') {
+        if (!post.video || post.video.status !== 'READY') {
           logger.warn(`Post ${post.id} video not ready`, {
             postId: post.id,
-            videoStatus: post.video.status,
+            videoStatus: post.video?.status,
           });
 
           await prisma.post.update({
             where: { id: post.id },
             data: {
               status: 'FAILED',
-              errorMessage: `Video not ready for publishing. Video status: ${post.video.status}`,
+              errorMessage: `Video not ready for publishing. Video status: ${post.video?.status || 'null'}`,
             },
           });
 
