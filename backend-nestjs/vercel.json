@@ -16,5 +16,11 @@
       "src": "/(.*)",
       "dest": "dist/main.js"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/process-scheduled",
+      "schedule": "*/5 * * * *"
+    }
   ]
 }
