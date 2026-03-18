@@ -46,3 +46,4 @@ uploads/
 
 # Prisma
 backend/prisma/migrations/*_migration/
+.vercel
