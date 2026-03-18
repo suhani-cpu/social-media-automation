@@ -1,6 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install && npx prisma generate",
+  "buildCommand": "npm run build",
   "functions": {
     "dist/main.js": {
       "maxDuration": 60,
@@ -17,13 +18,6 @@
     }
   ],
   "routes": [
-    {
-      "src": "/api/videos/upload",
-      "dest": "dist/main.js",
-      "headers": {
-        "x-vercel-proxy-body-size": "100mb"
-      }
-    },
     {
       "src": "/(.*)",
       "dest": "dist/main.js"
