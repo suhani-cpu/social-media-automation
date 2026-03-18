@@ -10,6 +10,7 @@ package-lock.json
 
 # Build outputs
 dist/
+!backend-nestjs/dist/
 .next/
 out/
 build/

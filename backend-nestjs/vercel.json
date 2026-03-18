@@ -1,19 +1,13 @@
 {
   "version": 2,
-  "installCommand": "npm install && npx prisma generate",
-  "buildCommand": "npm run build",
-  "functions": {
-    "dist/main.js": {
-      "maxDuration": 60,
-      "memory": 1024
-    }
-  },
   "builds": [
     {
       "src": "dist/main.js",
       "use": "@vercel/node",
       "config": {
-        "maxLambdaSize": "50mb"
+        "maxLambdaSize": "50mb",
+        "maxDuration": 60,
+        "includeFiles": ["dist/**", "node_modules/.prisma/**", "prisma/**"]
       }
     }
   ],
@@ -26,7 +20,7 @@
   "crons": [
     {
       "path": "/api/cron/process-scheduled",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 9 * * *"
     }
   ]
 }
