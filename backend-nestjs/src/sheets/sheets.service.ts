@@ -204,55 +204,80 @@ export class SheetsService {
           );
         }
 
-        // -- Auto-create Instagram post ------------------------------------
+        // -- Auto-create posts for ALL connected platforms -------------------
         if (videoRecord) {
-          let postCreated = false;
-          let postId: string | null = null;
-          let publishStatus = 'not_attempted';
+          const caption = video.description || video.headlines || video.title;
+          const postsCreated: string[] = [];
+
+          // Platform → postType mapping
+          const platformPostTypes: Array<{ platform: string; postType: string }> = [
+            { platform: 'INSTAGRAM', postType: 'REEL' },
+            { platform: 'YOUTUBE', postType: 'SHORT' },
+            { platform: 'FACEBOOK', postType: 'REEL' },
+          ];
 
           try {
-            const instagramAccount =
-              await this.prisma.socialAccount.findFirst({
-                where: {
-                  userId,
-                  platform: 'INSTAGRAM',
-                  status: 'ACTIVE',
-                },
-              });
+            // Find all connected accounts
+            const connectedAccounts = await this.prisma.socialAccount.findMany({
+              where: {
+                userId,
+                platform: { in: ['INSTAGRAM', 'YOUTUBE', 'FACEBOOK'] },
+                status: 'ACTIVE',
+              },
+            });
 
-            if (instagramAccount) {
-              const caption = video.description || video.title;
+            for (const account of connectedAccounts) {
+              const postTypeConfig = platformPostTypes.find(
+                (p) => p.platform === account.platform,
+              );
 
               const post = await this.prisma.post.create({
                 data: {
                   userId,
                   videoId: videoRecord.id,
-                  accountId: instagramAccount.id,
+                  accountId: account.id,
                   caption,
                   language: 'HINGLISH',
                   hashtags: [],
                   mentions: [],
-                  platform: 'INSTAGRAM',
-                  postType: 'REEL',
+                  platform: account.platform,
+                  postType: (postTypeConfig?.postType || 'FEED') as any,
                   status: 'DRAFT',
                   metadata: {
                     autoCreated: true,
                     fromSheet: true,
                     sheetUrl,
                     headlines: video.headlines,
+                    captionSource: 'sheet',
                   },
                 },
               });
 
-              postId = post.id;
-              postCreated = true;
+              postsCreated.push(`${account.platform}:${post.id}`);
+              this.logger.log(
+                `Draft post created for ${account.platform}: ${post.id} with caption from sheet`,
+              );
+            }
 
-              // Mark post as DRAFT (publishing can be triggered separately)
-              publishStatus = 'draft';
+            // If no accounts connected, save caption in video metadata so it's not lost
+            if (connectedAccounts.length === 0) {
+              await this.prisma.video.update({
+                where: { id: videoRecord.id },
+                data: {
+                  metadata: {
+                    ...(videoRecord.metadata as any || {}),
+                    sheetCaption: caption,
+                    sheetHeadlines: video.headlines,
+                    captionSource: 'sheet',
+                    note: 'No connected accounts — connect a platform to create posts',
+                  },
+                },
+              });
+              this.logger.warn('No connected accounts — caption saved in video metadata');
             }
           } catch (postError: any) {
             this.logger.error(
-              `Error creating auto-post for video ${videoRecord.id}: ${postError.message}`,
+              `Error creating posts for video ${videoRecord.id}: ${postError.message}`,
             );
           }
 
@@ -265,9 +290,10 @@ export class SheetsService {
               ? 'drive'
               : 'youtube',
             format: '9:16',
-            postCreated,
-            postId,
-            publishStatus,
+            postCreated: postsCreated.length > 0,
+            postId: postsCreated[0]?.split(':')[1] || null,
+            publishStatus: 'draft',
+            postsCreated: postsCreated.length,
           });
         } else {
           failedCount++;

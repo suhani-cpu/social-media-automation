@@ -169,46 +169,65 @@ let SheetsService = SheetsService_1 = class SheetsService {
                     this.logger.log(`Video metadata imported from YouTube (9:16) - marked as READY: ${videoRecord.id}`);
                 }
                 if (videoRecord) {
-                    let postCreated = false;
-                    let postId = null;
-                    let publishStatus = 'not_attempted';
+                    const caption = video.description || video.headlines || video.title;
+                    const postsCreated = [];
+                    const platformPostTypes = [
+                        { platform: 'INSTAGRAM', postType: 'REEL' },
+                        { platform: 'YOUTUBE', postType: 'SHORT' },
+                        { platform: 'FACEBOOK', postType: 'REEL' },
+                    ];
                     try {
-                        const instagramAccount = await this.prisma.socialAccount.findFirst({
+                        const connectedAccounts = await this.prisma.socialAccount.findMany({
                             where: {
                                 userId,
-                                platform: 'INSTAGRAM',
+                                platform: { in: ['INSTAGRAM', 'YOUTUBE', 'FACEBOOK'] },
                                 status: 'ACTIVE',
                             },
                         });
-                        if (instagramAccount) {
-                            const caption = video.description || video.title;
+                        for (const account of connectedAccounts) {
+                            const postTypeConfig = platformPostTypes.find((p) => p.platform === account.platform);
                             const post = await this.prisma.post.create({
                                 data: {
                                     userId,
                                     videoId: videoRecord.id,
-                                    accountId: instagramAccount.id,
+                                    accountId: account.id,
                                     caption,
                                     language: 'HINGLISH',
                                     hashtags: [],
                                     mentions: [],
-                                    platform: 'INSTAGRAM',
-                                    postType: 'REEL',
+                                    platform: account.platform,
+                                    postType: (postTypeConfig?.postType || 'FEED'),
                                     status: 'DRAFT',
                                     metadata: {
                                         autoCreated: true,
                                         fromSheet: true,
                                         sheetUrl,
                                         headlines: video.headlines,
+                                        captionSource: 'sheet',
                                     },
                                 },
                             });
-                            postId = post.id;
-                            postCreated = true;
-                            publishStatus = 'draft';
+                            postsCreated.push(`${account.platform}:${post.id}`);
+                            this.logger.log(`Draft post created for ${account.platform}: ${post.id} with caption from sheet`);
+                        }
+                        if (connectedAccounts.length === 0) {
+                            await this.prisma.video.update({
+                                where: { id: videoRecord.id },
+                                data: {
+                                    metadata: {
+                                        ...(videoRecord.metadata || {}),
+                                        sheetCaption: caption,
+                                        sheetHeadlines: video.headlines,
+                                        captionSource: 'sheet',
+                                        note: 'No connected accounts — connect a platform to create posts',
+                                    },
+                                },
+                            });
+                            this.logger.warn('No connected accounts — caption saved in video metadata');
                         }
                     }
                     catch (postError) {
-                        this.logger.error(`Error creating auto-post for video ${videoRecord.id}: ${postError.message}`);
+                        this.logger.error(`Error creating posts for video ${videoRecord.id}: ${postError.message}`);
                     }
                     successCount++;
                     results.push({
@@ -219,9 +238,10 @@ let SheetsService = SheetsService_1 = class SheetsService {
                             ? 'drive'
                             : 'youtube',
                         format: '9:16',
-                        postCreated,
-                        postId,
-                        publishStatus,
+                        postCreated: postsCreated.length > 0,
+                        postId: postsCreated[0]?.split(':')[1] || null,
+                        publishStatus: 'draft',
+                        postsCreated: postsCreated.length,
                     });
                 }
                 else {
