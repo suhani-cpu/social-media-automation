@@ -314,25 +314,53 @@ let SheetsService = SheetsService_1 = class SheetsService {
         if (lines.length < 2) {
             throw new common_1.BadRequestException('Sheet has no data');
         }
+        const headerValues = this.parseCSVLine(lines[0]).map((h) => h.toLowerCase().trim());
+        this.logger.log(`Sheet headers: ${headerValues.join(' | ')}`);
+        const findCol = (...names) => {
+            for (const name of names) {
+                const idx = headerValues.findIndex((h) => h.includes(name));
+                if (idx !== -1)
+                    return idx;
+            }
+            return -1;
+        };
+        const colMap = {
+            creativeName: findCol('creative name', 'creative', 'title', 'name'),
+            description: findCol('description', 'desc', 'caption'),
+            headlines: findCol('headline', 'head'),
+            metaStatic: findCol('meta static', 'meta'),
+            googleStatic: findCol('google static', 'google'),
+            videoWith1rsCTA: findCol('1 rs', '1rs', 'cta'),
+            videoWithWatchNow: findCol('watch now', 'watchnow'),
+            video16_9: findCol('16:9', '16_9', '16x9', 'landscape'),
+            video1_1: findCol('1:1', '1_1', '1x1', 'square'),
+            video9_16: findCol('9:16', '9_16', '9x16', 'vertical', 'shorts', 'reel'),
+        };
+        this.logger.log(`Column mapping: ${JSON.stringify(colMap)}`);
         const dataRows = lines.slice(1);
         const videos = [];
         for (const line of dataRows) {
             const values = this.parseCSVLine(line);
             if (values.length < 2)
                 continue;
-            videos.push({
-                creativeName: values[0] || '',
-                description: values[1] || '',
-                headlines: values[2] || '',
-                metaStatic: values[3] || '',
-                googleStatic: values[4] || '',
-                videoWith1rsCTA: values[5] || '',
-                videoWithWatchNow: values[6] || '',
-                video16_9: values[7] || '',
-                video1_1: values[8] || '',
-                video9_16: values[9] || '',
-            });
+            const getVal = (col) => (col >= 0 && col < values.length ? values[col] || '' : '');
+            const video = {
+                creativeName: getVal(colMap.creativeName),
+                description: getVal(colMap.description),
+                headlines: getVal(colMap.headlines),
+                metaStatic: getVal(colMap.metaStatic),
+                googleStatic: getVal(colMap.googleStatic),
+                videoWith1rsCTA: getVal(colMap.videoWith1rsCTA),
+                videoWithWatchNow: getVal(colMap.videoWithWatchNow),
+                video16_9: getVal(colMap.video16_9),
+                video1_1: getVal(colMap.video1_1),
+                video9_16: getVal(colMap.video9_16),
+            };
+            if (!video.creativeName && !video.description && !video.video9_16 && !video.videoWith1rsCTA)
+                continue;
+            videos.push(video);
         }
+        this.logger.log(`Parsed ${videos.length} video rows from sheet`);
         return videos;
     }
     parseCSVLine(line) {
@@ -367,8 +395,7 @@ let SheetsService = SheetsService_1 = class SheetsService {
     }
     parseVideos(sheetData) {
         return sheetData.map((row) => {
-            const driveLinks = [];
-            [
+            const allFields = [
                 row.metaStatic,
                 row.googleStatic,
                 row.videoWith1rsCTA,
@@ -376,7 +403,9 @@ let SheetsService = SheetsService_1 = class SheetsService {
                 row.video16_9,
                 row.video1_1,
                 row.video9_16,
-            ].forEach((link) => {
+            ];
+            const driveLinks = [];
+            allFields.forEach((link) => {
                 if (link && this.isDriveUrl(link)) {
                     driveLinks.push(link);
                 }
@@ -391,9 +420,21 @@ let SheetsService = SheetsService_1 = class SheetsService {
             if (row.video9_16 && this.isYouTubeUrl(row.video9_16)) {
                 youtubeLinks.vertical = row.video9_16;
             }
+            if (row.video9_16 && this.isDriveUrl(row.video9_16) && !youtubeLinks.vertical) {
+                this.logger.log(`9:16 column has Drive link: ${row.video9_16.substring(0, 60)}...`);
+            }
+            if (!youtubeLinks.vertical) {
+                for (const field of allFields) {
+                    if (field && /youtube\.com\/shorts\//i.test(field)) {
+                        youtubeLinks.vertical = field;
+                        this.logger.log(`Found YouTube Shorts URL: ${field.substring(0, 60)}...`);
+                        break;
+                    }
+                }
+            }
             const caption = row.description || row.headlines || '';
             return {
-                title: row.creativeName || 'Untitled Video',
+                title: row.creativeName || caption.substring(0, 60) || 'Untitled Video',
                 description: caption,
                 headlines: row.headlines || '',
                 driveLinks,
