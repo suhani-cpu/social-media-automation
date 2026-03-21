@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { videosApi, UploadProgress } from '@/lib/api/videos';
 import { formatFileSize } from '@/lib/utils';
 
-const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5GB
 const ALLOWED_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
 
 interface FileQueueItem {
