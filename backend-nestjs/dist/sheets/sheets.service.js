@@ -318,7 +318,7 @@ let SheetsService = SheetsService_1 = class SheetsService {
         const videos = [];
         for (const line of dataRows) {
             const values = this.parseCSVLine(line);
-            if (values.length < 10)
+            if (values.length < 2)
                 continue;
             videos.push({
                 creativeName: values[0] || '',
@@ -355,6 +355,16 @@ let SheetsService = SheetsService_1 = class SheetsService {
         values.push(current.trim());
         return values;
     }
+    isYouTubeUrl(url) {
+        if (!url)
+            return false;
+        return /youtube\.com|youtu\.be/i.test(url);
+    }
+    isDriveUrl(url) {
+        if (!url)
+            return false;
+        return /drive\.google\.com|docs\.google\.com.*\/d\/|open\?id=/i.test(url);
+    }
     parseVideos(sheetData) {
         return sheetData.map((row) => {
             const driveLinks = [];
@@ -363,24 +373,28 @@ let SheetsService = SheetsService_1 = class SheetsService {
                 row.googleStatic,
                 row.videoWith1rsCTA,
                 row.videoWithWatchNow,
+                row.video16_9,
+                row.video1_1,
+                row.video9_16,
             ].forEach((link) => {
-                if (link && link.includes('drive.google.com')) {
+                if (link && this.isDriveUrl(link)) {
                     driveLinks.push(link);
                 }
             });
             const youtubeLinks = {};
-            if (row.video16_9 && row.video16_9.includes('youtube.com')) {
+            if (row.video16_9 && this.isYouTubeUrl(row.video16_9)) {
                 youtubeLinks.landscape = row.video16_9;
             }
-            if (row.video1_1 && row.video1_1.includes('youtube.com')) {
+            if (row.video1_1 && this.isYouTubeUrl(row.video1_1)) {
                 youtubeLinks.square = row.video1_1;
             }
-            if (row.video9_16 && row.video9_16.includes('youtube.com')) {
+            if (row.video9_16 && this.isYouTubeUrl(row.video9_16)) {
                 youtubeLinks.vertical = row.video9_16;
             }
+            const caption = row.description || row.headlines || '';
             return {
                 title: row.creativeName || 'Untitled Video',
-                description: row.description || '',
+                description: caption,
                 headlines: row.headlines || '',
                 driveLinks,
                 youtubeLinks,
@@ -392,6 +406,8 @@ let SheetsService = SheetsService_1 = class SheetsService {
             /\/file\/d\/([a-zA-Z0-9-_]+)/,
             /[?&]id=([a-zA-Z0-9-_]+)/,
             /\/folders\/([a-zA-Z0-9-_]+)/,
+            /\/d\/([a-zA-Z0-9-_]+)/,
+            /drive\.google\.com\/uc\?.*id=([a-zA-Z0-9-_]+)/,
         ];
         for (const pattern of patterns) {
             const match = driveUrl.match(pattern);

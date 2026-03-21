@@ -402,7 +402,7 @@ export class SheetsService {
 
     for (const line of dataRows) {
       const values = this.parseCSVLine(line);
-      if (values.length < 10) continue; // skip incomplete rows
+      if (values.length < 2) continue; // need at least creative name + description
 
       videos.push({
         creativeName: values[0] || '',
@@ -442,40 +442,56 @@ export class SheetsService {
     return values;
   }
 
+  private isYouTubeUrl(url: string): boolean {
+    if (!url) return false;
+    return /youtube\.com|youtu\.be/i.test(url);
+  }
+
+  private isDriveUrl(url: string): boolean {
+    if (!url) return false;
+    return /drive\.google\.com|docs\.google\.com.*\/d\/|open\?id=/i.test(url);
+  }
+
   private parseVideos(sheetData: SheetVideoData[]): ParsedVideo[] {
     return sheetData.map((row) => {
-      // Extract Drive links from various columns
+      // Extract Drive links from ALL columns (including 9:16, 16:9, 1:1)
       const driveLinks: string[] = [];
       [
         row.metaStatic,
         row.googleStatic,
         row.videoWith1rsCTA,
         row.videoWithWatchNow,
+        row.video16_9,
+        row.video1_1,
+        row.video9_16,
       ].forEach((link) => {
-        if (link && link.includes('drive.google.com')) {
+        if (link && this.isDriveUrl(link)) {
           driveLinks.push(link);
         }
       });
 
-      // Extract YouTube links
+      // Extract YouTube links (support youtube.com/watch, youtube.com/shorts, youtu.be)
       const youtubeLinks: {
         landscape?: string;
         square?: string;
         vertical?: string;
       } = {};
-      if (row.video16_9 && row.video16_9.includes('youtube.com')) {
+      if (row.video16_9 && this.isYouTubeUrl(row.video16_9)) {
         youtubeLinks.landscape = row.video16_9;
       }
-      if (row.video1_1 && row.video1_1.includes('youtube.com')) {
+      if (row.video1_1 && this.isYouTubeUrl(row.video1_1)) {
         youtubeLinks.square = row.video1_1;
       }
-      if (row.video9_16 && row.video9_16.includes('youtube.com')) {
+      if (row.video9_16 && this.isYouTubeUrl(row.video9_16)) {
         youtubeLinks.vertical = row.video9_16;
       }
 
+      // Caption: use description (col B), fallback to headlines (col C)
+      const caption = row.description || row.headlines || '';
+
       return {
         title: row.creativeName || 'Untitled Video',
-        description: row.description || '',
+        description: caption,
         headlines: row.headlines || '',
         driveLinks,
         youtubeLinks,
@@ -489,9 +505,11 @@ export class SheetsService {
 
   private extractDriveFileId(driveUrl: string): string | null {
     const patterns = [
-      /\/file\/d\/([a-zA-Z0-9-_]+)/,
-      /[?&]id=([a-zA-Z0-9-_]+)/,
-      /\/folders\/([a-zA-Z0-9-_]+)/,
+      /\/file\/d\/([a-zA-Z0-9-_]+)/,         // drive.google.com/file/d/FILE_ID
+      /[?&]id=([a-zA-Z0-9-_]+)/,              // drive.google.com/open?id=FILE_ID
+      /\/folders\/([a-zA-Z0-9-_]+)/,           // drive.google.com/folders/FOLDER_ID
+      /\/d\/([a-zA-Z0-9-_]+)/,                 // docs.google.com/*/d/FILE_ID
+      /drive\.google\.com\/uc\?.*id=([a-zA-Z0-9-_]+)/, // direct download link
     ];
 
     for (const pattern of patterns) {

@@ -53,6 +53,8 @@ export declare class SheetsService {
     private fetchSheetData;
     private parseCSV;
     private parseCSVLine;
+    private isYouTubeUrl;
+    private isDriveUrl;
     private parseVideos;
     private extractDriveFileId;
 }
