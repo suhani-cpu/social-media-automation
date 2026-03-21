@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 
 export interface CaptionRequest {
   videoTitle: string;
@@ -20,23 +20,24 @@ export interface CaptionVariation {
 @Injectable()
 export class CaptionService {
   private readonly logger = new Logger(CaptionService.name);
-  private readonly anthropic: Anthropic | null;
+  private readonly model: GenerativeModel | null;
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
+    const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
-      this.anthropic = new Anthropic({ apiKey });
-      this.logger.log('Claude AI caption generation enabled');
+      const genAI = new GoogleGenerativeAI(apiKey);
+      this.model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      this.logger.log('Gemini AI caption generation enabled');
     } else {
-      this.anthropic = null;
-      this.logger.warn('ANTHROPIC_API_KEY not set — using fallback template captions');
+      this.model = null;
+      this.logger.warn('GEMINI_API_KEY not set — using fallback template captions');
     }
   }
 
   async generate(request: CaptionRequest): Promise<CaptionVariation[]> {
     this.logger.log(`Generating caption: ${request.language} / ${request.platform}`);
 
-    if (this.anthropic) {
+    if (this.model) {
       return this.generateWithAI(request);
     }
     return this.generateFallback(request);
@@ -83,13 +84,8 @@ Make each variation distinctly different in style:
 Include appropriate emojis. Make hashtags relevant and trending.`;
 
     try {
-      const message = await this.anthropic!.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: prompt }],
-      });
-
-      const text = message.content[0].type === 'text' ? message.content[0].text : '';
+      const result = await this.model!.generateContent(prompt);
+      const text = result.response.text();
 
       // Extract JSON from response
       const jsonMatch = text.match(/\[[\s\S]*\]/);
