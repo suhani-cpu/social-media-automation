@@ -100,4 +100,28 @@ export const analyticsApi = {
     const response = await apiClient.get('/analytics/top', { params });
     return response.data;
   },
+
+  /**
+   * Get best times to post
+   */
+  getBestTimes: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/analytics/best-times');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Get performance insights
+   */
+  getInsights: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/analytics/insights');
+      return response.data;
+    } catch {
+      return null;
+    }
+  },
 };
