@@ -207,13 +207,19 @@ let YouTubeService = YouTubeService_1 = class YouTubeService {
                 const percent = totalBytes > 0 ? (bytesRead / totalBytes) * 100 : 0;
                 onProgress?.({ stage: 'uploading', percent, message: `Uploading: ${Math.round(percent)}%` });
             });
-            const response = await youtube.videos.insert({
+            const UPLOAD_TIMEOUT = parseInt(process.env.UPLOAD_TIMEOUT_MS || '50000', 10);
+            const uploadPromise = youtube.videos.insert({
                 part: ['snippet', 'status'],
                 requestBody,
                 media: {
                     body: readStream,
                 },
             });
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => {
+                readStream.destroy();
+                reject(new Error(`YouTube upload timed out after ${Math.round(UPLOAD_TIMEOUT / 1000)}s. Video may be too large for serverless deployment. Try a smaller/shorter video.`));
+            }, UPLOAD_TIMEOUT));
+            const response = await Promise.race([uploadPromise, timeoutPromise]);
             const videoId = response.data.id;
             const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
             this.logger.log('Video uploaded to YouTube successfully', {

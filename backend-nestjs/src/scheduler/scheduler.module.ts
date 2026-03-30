@@ -5,11 +5,13 @@ import { CronJobsService } from './cron-jobs.service';
 import { PostSchedulerService } from './post-scheduler.service';
 import { CronController } from './cron.controller';
 import { PostsModule } from '../posts/posts.module';
+import { OAuthModule } from '../oauth/oauth.module';
 
 @Module({
   imports: [
     ConfigModule,
     PostsModule,
+    OAuthModule,
     BullModule.registerQueue(
       { name: 'post-publishing' },
       { name: 'analytics-sync' },

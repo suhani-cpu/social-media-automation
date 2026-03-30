@@ -70,6 +70,11 @@ export class PostsController {
     return this.postsService.publish(user.id, id);
   }
 
+  @Post(':id/reset')
+  resetPost(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
+    return this.postsService.resetPost(user.id, id);
+  }
+
   @Post(':id/retry')
   retryPublish(@CurrentUser() user: CurrentUserPayload, @Param('id') id: string) {
     return this.postsService.retryPublish(user.id, id);

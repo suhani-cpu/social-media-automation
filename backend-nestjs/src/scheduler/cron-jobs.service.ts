@@ -4,6 +4,7 @@ import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { PrismaService } from '../prisma/prisma.service';
 import { PostSchedulerService } from './post-scheduler.service';
+import { YouTubeOAuthService } from '../oauth/services/youtube-oauth.service';
 
 @Injectable()
 export class CronJobsService {
@@ -12,6 +13,7 @@ export class CronJobsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly postScheduler: PostSchedulerService,
+    private readonly youtubeOAuth: YouTubeOAuthService,
     @InjectQueue('analytics-sync') private readonly analyticsSyncQueue: Queue,
   ) {
     this.logger.log('Cron jobs initialized');
@@ -21,9 +23,34 @@ export class CronJobsService {
   @Cron(CronExpression.EVERY_MINUTE)
   async checkScheduledPosts() {
     try {
+      // First: reset any posts stuck in PUBLISHING for > 10 minutes
+      await this.resetStuckPublishingPosts();
+      // Then: process scheduled posts
       await this.postScheduler.checkAndPublishScheduledPosts();
     } catch (error) {
       this.logger.error('Scheduled posts check failed:', error);
+    }
+  }
+
+  // Reset posts stuck in PUBLISHING status for more than 10 minutes
+  async resetStuckPublishingPosts() {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+    try {
+      const stuckPosts = await this.prisma.post.updateMany({
+        where: {
+          status: 'PUBLISHING',
+          updatedAt: { lt: tenMinutesAgo },
+        },
+        data: {
+          status: 'FAILED',
+          errorMessage: 'Publishing timed out — auto-reset after 10 minutes. Try again with a smaller video.',
+        },
+      });
+      if (stuckPosts.count > 0) {
+        this.logger.warn(`Reset ${stuckPosts.count} stuck PUBLISHING posts to FAILED`);
+      }
+    } catch (error) {
+      this.logger.error('Failed to reset stuck posts:', error);
     }
   }
 
@@ -43,15 +70,36 @@ export class CronJobsService {
 
       if (expiringAccounts.length === 0) return;
 
-      this.logger.log(`Found ${expiringAccounts.length} tokens expiring soon`);
+      this.logger.log(`Found ${expiringAccounts.length} tokens expiring soon — refreshing`);
 
       for (const account of expiringAccounts) {
         try {
-          // Platform-specific refresh would be handled here
-          // In NestJS we'd inject the specific OAuth services
-          this.logger.log(`Token refresh needed for ${account.platform} account ${account.id}`);
-        } catch (error) {
-          this.logger.error(`Failed to refresh token for account ${account.id}:`, error);
+          if (account.platform === 'YOUTUBE') {
+            await this.youtubeOAuth.refreshToken(account.id);
+            this.logger.log(`✅ YouTube token refreshed for ${account.username}`);
+          } else if (account.platform === 'GOOGLE_DRIVE') {
+            // Drive uses googleapis OAuth2 — refresh directly
+            const { google } = await import('googleapis');
+            const oauth2Client = new google.auth.OAuth2(
+              process.env.GOOGLE_DRIVE_CLIENT_ID,
+              process.env.GOOGLE_DRIVE_CLIENT_SECRET,
+            );
+            oauth2Client.setCredentials({ refresh_token: account.refreshToken });
+            const { credentials } = await oauth2Client.refreshAccessToken();
+            await this.prisma.socialAccount.update({
+              where: { id: account.id },
+              data: {
+                accessToken: credentials.access_token!,
+                tokenExpiry: credentials.expiry_date ? new Date(credentials.expiry_date) : null,
+              },
+            });
+            this.logger.log(`✅ Drive token refreshed for ${account.username}`);
+          } else if (account.platform === 'FACEBOOK' || account.platform === 'INSTAGRAM') {
+            // Facebook/IG long-lived tokens last 60 days, can't easily refresh
+            this.logger.log(`⚠️ ${account.platform} token expiring — user needs to reconnect`);
+          }
+        } catch (error: any) {
+          this.logger.error(`❌ Failed to refresh ${account.platform} token for ${account.username}: ${error.message}`);
           await this.prisma.socialAccount.update({
             where: { id: account.id },
             data: { status: 'EXPIRED' },

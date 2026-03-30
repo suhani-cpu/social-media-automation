@@ -300,14 +300,22 @@ export class YouTubeService {
         onProgress?.({ stage: 'uploading', percent, message: `Uploading: ${Math.round(percent)}%` });
       });
 
-      // Upload video using resumable upload
-      const response = await youtube.videos.insert({
+      // Upload video with timeout protection (Vercel 60s limit)
+      const UPLOAD_TIMEOUT = parseInt(process.env.UPLOAD_TIMEOUT_MS || '50000', 10);
+      const uploadPromise = youtube.videos.insert({
         part: ['snippet', 'status'],
         requestBody,
         media: {
           body: readStream,
         },
       });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => {
+          readStream.destroy();
+          reject(new Error(`YouTube upload timed out after ${Math.round(UPLOAD_TIMEOUT / 1000)}s. Video may be too large for serverless deployment. Try a smaller/shorter video.`));
+        }, UPLOAD_TIMEOUT),
+      );
+      const response = await Promise.race([uploadPromise, timeoutPromise]);
 
       const videoId = response.data.id!;
       const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;

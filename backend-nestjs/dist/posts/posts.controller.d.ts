@@ -116,6 +116,33 @@ export declare class PostsController {
         status: "FAILED" | "DRAFT" | "SCHEDULED" | "PUBLISHING" | "DELETED" | undefined;
         platformUrl?: undefined;
     }>;
+    resetPost(user: CurrentUserPayload, id: string): Promise<{
+        message: string;
+        post: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            platform: import(".prisma/client").$Enums.Platform;
+            accountId: string;
+            status: import(".prisma/client").$Enums.PostStatus;
+            metadata: import("@prisma/client/runtime/library").JsonValue | null;
+            thumbnailUrl: string | null;
+            language: import(".prisma/client").$Enums.PostLanguage;
+            videoId: string | null;
+            caption: string;
+            hashtags: string[];
+            mentions: string[];
+            postType: import(".prisma/client").$Enums.PostType;
+            mediaUrl: string | null;
+            scheduledFor: Date | null;
+            publishedAt: Date | null;
+            platformPostId: string | null;
+            platformUrl: string | null;
+            errorMessage: string | null;
+            retryCount: number;
+        };
+    }>;
     retryPublish(user: CurrentUserPayload, id: string): Promise<{
         message: string;
         postId: string;

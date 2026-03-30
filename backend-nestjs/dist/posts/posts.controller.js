@@ -46,6 +46,9 @@ let PostsController = class PostsController {
     publish(user, id) {
         return this.postsService.publish(user.id, id);
     }
+    resetPost(user, id) {
+        return this.postsService.resetPost(user.id, id);
+    }
     retryPublish(user, id) {
         return this.postsService.retryPublish(user.id, id);
     }
@@ -101,6 +104,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], PostsController.prototype, "publish", null);
+__decorate([
+    (0, common_1.Post)(':id/reset'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], PostsController.prototype, "resetPost", null);
 __decorate([
     (0, common_1.Post)(':id/retry'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

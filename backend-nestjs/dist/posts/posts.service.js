@@ -168,6 +168,18 @@ let PostsService = PostsService_1 = class PostsService {
         });
         return { posts };
     }
+    async resetPost(userId, postId) {
+        const post = await this.prisma.post.findFirst({
+            where: { id: postId, userId, status: { in: ['PUBLISHING', 'FAILED'] } },
+        });
+        if (!post)
+            throw new common_1.NotFoundException('Post not found or not in a resettable state');
+        const updated = await this.prisma.post.update({
+            where: { id: postId },
+            data: { status: 'FAILED', errorMessage: 'Manually reset by user — ready to retry' },
+        });
+        return { message: 'Post reset to FAILED — you can now retry', post: updated };
+    }
     async publish(userId, postId) {
         const post = await this.prisma.post.findFirst({
             where: { id: postId, userId },
@@ -180,7 +192,11 @@ let PostsService = PostsService_1 = class PostsService {
             throw new common_1.NotFoundException('Post not found');
         }
         if (post.status === 'PUBLISHING') {
-            return { message: 'Post is already being published', postId: post.id };
+            const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
+            if (post.updatedAt > tenMinAgo) {
+                return { message: 'Post is already being published — please wait', postId: post.id };
+            }
+            this.logger.warn(`Post ${post.id} stuck in PUBLISHING — resetting and retrying`);
         }
         if (post.status === 'PUBLISHED') {
             return { message: 'Post is already published', postId: post.id };
@@ -214,7 +230,17 @@ let PostsService = PostsService_1 = class PostsService {
                 throw new common_1.BadRequestException('Post has no associated video');
             }
             if (!account) {
-                throw new common_1.BadRequestException('Post has no associated social account');
+                throw new common_1.BadRequestException('Post has no associated social account — connect your account in Settings');
+            }
+            if (account.status !== 'ACTIVE') {
+                throw new common_1.BadRequestException(`${account.platform} account is ${account.status}. Please reconnect in Settings > Accounts.`);
+            }
+            const MAX_UPLOAD_SIZE = parseInt(process.env.MAX_VIDEO_UPLOAD_SIZE_MB || '100', 10) * 1024 * 1024;
+            const videoSize = Number(video.fileSize || 0);
+            if (videoSize > MAX_UPLOAD_SIZE) {
+                const sizeMB = Math.round(videoSize / 1024 / 1024);
+                const maxMB = Math.round(MAX_UPLOAD_SIZE / 1024 / 1024);
+                throw new common_1.BadRequestException(`Video too large (${sizeMB} MB) for serverless upload. Max ${maxMB} MB. Compress the video or upload directly to ${post.platform}.`);
             }
             const metadata = video.metadata;
             if (metadata?.driveFileId) {

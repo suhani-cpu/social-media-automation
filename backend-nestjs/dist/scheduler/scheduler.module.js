@@ -14,6 +14,7 @@ const cron_jobs_service_1 = require("./cron-jobs.service");
 const post_scheduler_service_1 = require("./post-scheduler.service");
 const cron_controller_1 = require("./cron.controller");
 const posts_module_1 = require("../posts/posts.module");
+const oauth_module_1 = require("../oauth/oauth.module");
 let SchedulerModule = class SchedulerModule {
 };
 exports.SchedulerModule = SchedulerModule;
@@ -22,6 +23,7 @@ exports.SchedulerModule = SchedulerModule = __decorate([
         imports: [
             config_1.ConfigModule,
             posts_module_1.PostsModule,
+            oauth_module_1.OAuthModule,
             bull_1.BullModule.registerQueue({ name: 'post-publishing' }, { name: 'analytics-sync' }),
         ],
         controllers: [cron_controller_1.CronController],

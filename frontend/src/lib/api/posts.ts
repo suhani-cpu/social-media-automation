@@ -69,6 +69,11 @@ export const postsApi = {
     return response.data;
   },
 
+  reset: async (id: string): Promise<{ message: string }> => {
+    const response = await apiClient.post(`/posts/${id}/reset`);
+    return response.data;
+  },
+
   delete: async (id: string): Promise<{ message: string }> => {
     const response = await apiClient.delete(`/posts/${id}`);
     return response.data;

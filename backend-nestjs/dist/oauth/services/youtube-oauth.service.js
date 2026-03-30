@@ -48,9 +48,24 @@ let YouTubeOAuthService = YouTubeOAuthService_1 = class YouTubeOAuthService {
         };
     }
     async getAuthClient(accountId) {
-        const account = await this.prisma.socialAccount.findUnique({ where: { id: accountId } });
+        let account = await this.prisma.socialAccount.findUnique({ where: { id: accountId } });
         if (!account || account.platform !== 'YOUTUBE') {
             throw new Error(`YouTube account ${accountId} not found`);
+        }
+        const fiveMinFromNow = new Date(Date.now() + 5 * 60 * 1000);
+        if (account.tokenExpiry && account.tokenExpiry < fiveMinFromNow && account.refreshToken) {
+            this.logger.log(`YouTube token expired/expiring — refreshing proactively for ${accountId}`);
+            try {
+                await this.refreshToken(accountId);
+                const refreshed = await this.prisma.socialAccount.findUnique({ where: { id: accountId } });
+                if (!refreshed)
+                    throw new Error('Account not found after refresh');
+                account = refreshed;
+                this.logger.log(`YouTube token refreshed successfully for ${accountId}`);
+            }
+            catch (err) {
+                this.logger.error(`Proactive YouTube token refresh failed: ${err.message}`);
+            }
         }
         const client = this.createOAuth2Client();
         client.setCredentials({
@@ -68,7 +83,7 @@ let YouTubeOAuthService = YouTubeOAuthService_1 = class YouTubeOAuthService {
                 updateData.tokenExpiry = new Date(tokens.expiry_date);
             if (Object.keys(updateData).length > 0) {
                 await this.prisma.socialAccount.update({ where: { id: accountId }, data: updateData });
-                this.logger.log(`YouTube tokens refreshed for account ${accountId}`);
+                this.logger.log(`YouTube tokens auto-refreshed for account ${accountId}`);
             }
         });
         return client;

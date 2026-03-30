@@ -143,6 +143,22 @@ export class PostsService implements OnModuleInit {
   }
 
   /**
+   * Reset a stuck PUBLISHING or FAILED post back to FAILED with clear error.
+   */
+  async resetPost(userId: string, postId: string) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, userId, status: { in: ['PUBLISHING', 'FAILED'] } },
+    });
+    if (!post) throw new NotFoundException('Post not found or not in a resettable state');
+
+    const updated = await this.prisma.post.update({
+      where: { id: postId },
+      data: { status: 'FAILED', errorMessage: 'Manually reset by user — ready to retry' },
+    });
+    return { message: 'Post reset to FAILED — you can now retry', post: updated };
+  }
+
+  /**
    * Publish a post — runs synchronously (serverless can't do background tasks).
    */
   async publish(userId: string, postId: string) {
@@ -159,7 +175,12 @@ export class PostsService implements OnModuleInit {
     }
 
     if (post.status === 'PUBLISHING') {
-      return { message: 'Post is already being published', postId: post.id };
+      // If stuck for more than 10 minutes, allow re-publish
+      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000);
+      if (post.updatedAt > tenMinAgo) {
+        return { message: 'Post is already being published — please wait', postId: post.id };
+      }
+      this.logger.warn(`Post ${post.id} stuck in PUBLISHING — resetting and retrying`);
     }
 
     if (post.status === 'PUBLISHED') {
@@ -214,7 +235,21 @@ export class PostsService implements OnModuleInit {
         throw new BadRequestException('Post has no associated video');
       }
       if (!account) {
-        throw new BadRequestException('Post has no associated social account');
+        throw new BadRequestException('Post has no associated social account — connect your account in Settings');
+      }
+      if (account.status !== 'ACTIVE') {
+        throw new BadRequestException(`${account.platform} account is ${account.status}. Please reconnect in Settings > Accounts.`);
+      }
+
+      // Pre-flight video size check for Vercel serverless (60s timeout)
+      const MAX_UPLOAD_SIZE = parseInt(process.env.MAX_VIDEO_UPLOAD_SIZE_MB || '100', 10) * 1024 * 1024;
+      const videoSize = Number(video.fileSize || 0);
+      if (videoSize > MAX_UPLOAD_SIZE) {
+        const sizeMB = Math.round(videoSize / 1024 / 1024);
+        const maxMB = Math.round(MAX_UPLOAD_SIZE / 1024 / 1024);
+        throw new BadRequestException(
+          `Video too large (${sizeMB} MB) for serverless upload. Max ${maxMB} MB. Compress the video or upload directly to ${post.platform}.`,
+        );
       }
 
       // If video has a Drive file ID, always download fresh (serverless /tmp is ephemeral)
